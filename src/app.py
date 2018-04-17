@@ -66,10 +66,7 @@ temperature_url = config.get("Temperature","endpoint")
 SCROLLPHAT_ENABLED = False
 if config.get("Scrollphat",'enabled') == "True":
   scrollphat.set_brightness(7)
-  #SCROLLPHAT_ENABLED = True
-  print "[ENABLED] scrollphat"
-else:
-  print "[DISABLED] scrollphat (%s)" % config.get("Scrollphat",'enabled')
+
 
 def get_temperature():
   global temperature_url
@@ -144,8 +141,6 @@ while True:
   # Handle keyboard events
   currentTime = int(time.time() * FlowMeter.MS_IN_A_SECOND)
   for tap in taps:
-    if tap.getBeverage() == DISABLED:
-      pass
     if tap.thisPour > 0.0:
       pour_size = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER, 3)
       pour_size2 = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER, 2)
@@ -161,16 +156,20 @@ while True:
       pour_size = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER, 3)
       record_pour(tap.get_tap_id(), pour_size)
 
-
       volume_remaining = str(round(db.get_percentage(tap.get_tap_id()),3) * 100)
 
       # is twitter enabled?
       if config.getboolean("Twitter", "enabled"):
         # tweet of the record
-        twitter.tweet_pour(tap.get_tap_id(),tap.getFormattedThisPour(),tap.getBeverage(),volume_remaining,get_temperature())
+        twitter.tweet_pour(tap.get_tap_id(),
+                           tap.getFormattedThisPour(),
+                           tap.getBeverage(),
+                           volume_remaining,
+                           get_temperature())
 
       tap.thisPour = 0.0
       scrollphat.clear()
+      scrollphat_cleared = True
       if config.getboolean("Mqtt","enabled"):
         update_mqtt(tap.get_tap_id())
 
@@ -185,6 +184,6 @@ while True:
       tap.thisPour = 0.0
     if (currentTime - tap.lastClick > (2000*30)) and (SCROLLPHAT_ENABLED == True) and (scrollphat_cleared == False):
       scrollphat.clear()
-      print "[CLEARING SCROLLPHAT]"
+      #print "[CLEARING SCROLLPHAT]"
       
   time.sleep(0.01)    
