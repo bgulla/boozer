@@ -94,7 +94,7 @@ def get_temperature():
 def record_pour(tap_id, pour):
   # update sqlite database
   db.update_tap(tap_id,pour)
-  print "[TAP ",tap_id, "] UPDATED IN DATABASE"
+  logger.info( "[TAP ",tap_id, "] UPDATED IN DATABASE" )
   # TODO: Post to influx here to show most recent pour
 
 def update_mqtt(tap_id):
@@ -103,16 +103,17 @@ def update_mqtt(tap_id):
   percent= db.get_percentage100(tap_id)
   topic = "bar/tap%s" % str(tap_id)
   mqtt_client.pub_mqtt(topic,str(percent))
+  logger.info("Updated mqtt for topic: " + topic )
 
 # Update the values in mqtt
 if config.getboolean("Mqtt","enabled"):
-  print "[Mqtt] enabled."
+  logger.info( "[Mqtt] enabled.")
   update_mqtt(1)
   update_mqtt(2)
   update_mqtt(3)
   update_mqtt(4)
 else:
-  print "[Mqtt] disabled."
+  logger.info("[Mqtt] disabled.")
   
 def register_tap1(channel):
   currentTime = int(time.time() * FlowMeter.MS_IN_A_SECOND)
@@ -147,7 +148,7 @@ scrollphat_cleared = True
 
 
 # Initial info
-print "[Temperature] " + get_temperature()
+logger.info( "[Temperature] " + get_temperature())
 
 while True:
 
@@ -159,7 +160,7 @@ while True:
       pour_size = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER, 3)
       pour_size2 = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER, 2) # IDK what is going on here but it works and I am afraid to break it
       if pour_size != old_pour:
-        print "Tap: %s\t Poursize: %s vs %s" % (tap.get_tap_id(),  pour_size, str(old_pour)) 
+        logger.debug( "Tap: %s\t Poursize: %s vs %s" % (tap.get_tap_id(),  pour_size, str(old_pour)))
         scrollphat.set_brightness(7)
         scrollphat.write_string(str(pour_size2).replace("0.","."))
         old_pour = pour_size
