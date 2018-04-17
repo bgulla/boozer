@@ -47,16 +47,16 @@ GPIO.setup(TAP4_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 # set up the flow meters
 taps = []
 # Tap 1
-tap1 = FlowMeter( "not metric", [config.get("Taps", "tap1_beer_name")], tap_id=4, pin=config.getint("Taps", "tap1_gpio_pin"))
+tap1 = FlowMeter( "not metric", [config.get("Taps", "tap1_beer_name")], tap_id=1, pin=config.getint("Taps", "tap1_gpio_pin"))
 GPIO.setup(TAP1_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 # Tap 2
-tap2 = FlowMeter( "not metric", [config.get("Taps", "tap2_beer_name")], tap_id=3, pin=config.getint("Taps", "tap2_gpio_pin"))
+tap2 = FlowMeter( "not metric", [config.get("Taps", "tap2_beer_name")], tap_id=2, pin=config.getint("Taps", "tap2_gpio_pin"))
 GPIO.setup(TAP2_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 # Tap 3
-tap3 = FlowMeter( "not metric", [config.get("Taps", "tap3_beer_name")], tap_id=2, pin=config.getint("Taps", "tap3_gpio_pin"))
+tap3 = FlowMeter( "not metric", [config.get("Taps", "tap3_beer_name")], tap_id=3, pin=config.getint("Taps", "tap3_gpio_pin"))
 GPIO.setup(TAP3_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 # Tap 4
-tap4 = FlowMeter( "not metric", [config.get("Taps", "tap4_beer_name")], tap_id=1, pin=config.getint("Taps", "tap4_gpio_pin"))
+tap4 = FlowMeter( "not metric", [config.get("Taps", "tap4_beer_name")], tap_id=4, pin=config.getint("Taps", "tap4_gpio_pin"))
 GPIO.setup(TAP4_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 taps = {tap1,tap2,tap3,tap4}
 

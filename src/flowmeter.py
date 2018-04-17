@@ -53,7 +53,8 @@ class FlowMeter():
     self.lastClick = currentTime
 
   def getBeverage(self):
-    return str(random.choice(self.beverage))
+    #return str(random.choice(self.beverage))
+    return self.beverage
 
   def get_tap_id(self):
     return self.tap_id
