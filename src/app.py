@@ -9,7 +9,7 @@ import scrollphat
 import RPi.GPIO as GPIO
 from flowmeter import *
 import beer_database as db
-import bartwitter
+import twitter_notify
 import requests
 import ConfigParser
 from pushbullet import Pushbullet
@@ -21,6 +21,13 @@ DISABLED="disabled"
 CONFIG_FILE="./config.ini"
 config = ConfigParser.ConfigParser()
 config.read(CONFIG_FILE)
+
+# setup twitter client
+if config.getboolean("Twitter","enabled"):
+  twitter = twitter_notify.TwitterNotify(config)
+
+if config.getboolean("Mqtt","enabled"):
+  mqtt_client = bar_mqtt.BoozerMqtt(config.get("Mqtt","broker"))
 
 #pb = Pushbullet(config.get("Pushbullet","api_key"))
 
@@ -77,7 +84,7 @@ def update_mqtt(tap_id):
   broker = config.get("Mqtt","broker")
   percent= db.get_percentage100(tap_id)
   topic = "bar/tap%s" % str(tap_id)
-  bar_mqtt.pub_mqtt(broker,topic,str(percent))
+  mqtt_client.pub_mqtt(topic,str(percent))
 
 # Update the values in mqtt
 if config.getboolean("Mqtt","enabled"):
@@ -106,14 +113,6 @@ def register_tap4(channel):
   if tap4.enabled == True:
     tap4.update(currentTime)
 
-
-def logit(somestr):
-  return
-
-
-def tweetPour(theTweet):
-  bartwitter.post_tweet(theTweet)
-  print "[THE TWEET] " +theTweet
 
 # TODO, look into this and how to pass parameters to doAClick function
 GPIO.add_event_detect(TAP4_PIN, GPIO.RISING, callback=register_tap1, bouncetime=20) # TAP 4
@@ -155,10 +154,12 @@ while True:
 
 
       volume_remaining = str(round(db.get_percentage(tap.get_tap_id()),3) * 100)
-      tweet = "I just poured " + tap.getFormattedThisPour()  + " of " + tap.getBeverage() + " from Tap " + str(tap.get_tap_id()) + " (" + volume_remaining + "% remaining)"+  " at a cold " + str(get_temperature()) + DEGREES
-      logit(tweet)
-      tweetPour(tweet)
-      print "[POUR HAS BEEN TWEETED]"
+
+      # is twitter enabled?
+      if config.getboolean("Twitter", "enabled"):
+        # tweet of the record
+        twitter.tweet_pour(tap.get_tap_id(),tap.getFormattedThisPour(),tap.getBeverage(),volume_remaining,get_temperature())
+
       tap.thisPour = 0.0
       scrollphat.clear()
       if config.getboolean("Mqtt","enabled"):
