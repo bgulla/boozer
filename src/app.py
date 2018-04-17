@@ -203,8 +203,8 @@ while True:
     
     # reset flow meter after each pour (2 secs of inactivity)
     if (tap.thisPour <= 0.23 and currentTime - tap.lastClick > 2000):
-      pour_size = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER, 3)
-      record_pour(tap.get_tap_id(), pour_size)
+      #pour_size = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER, 3)
+      #record_pour(tap.get_tap_id(), pour_size)
       tap.thisPour = 0.0
     #if (currentTime - tap.lastClick > (2000*30)) and (SCROLLPHAT_ENABLED == True) and (scrollphat_cleared == False):
     #  scrollphat.clear()
