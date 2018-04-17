@@ -66,7 +66,7 @@ temperature_url = config.get("Temperature","endpoint")
 SCROLLPHAT_ENABLED = False
 if config.get("Scrollphat",'enabled') == "True":
   scrollphat.set_brightness(7)
-  SCROLLPHAT_ENABLED = True
+  #SCROLLPHAT_ENABLED = True
   print "[ENABLED] scrollphat"
 else:
   print "[DISABLED] scrollphat (%s)" % config.get("Scrollphat",'enabled')
@@ -173,8 +173,6 @@ while True:
       scrollphat.clear()
       if config.getboolean("Mqtt","enabled"):
         update_mqtt(tap.get_tap_id())
-      
-
 
     if tap.thisPour > 0.05:
 #      print currentTime - tap.lastClick 
