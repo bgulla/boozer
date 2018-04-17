@@ -175,7 +175,7 @@ while True:
 
     if tap.thisPour > 0.05:
 #      print currentTime - tap.lastClick 
-      print "[TAP "+ str(tap.get_tap_id())  +"]\t" + str(tap.thisPour)
+      print "[TAP "+ str(tap.get_tap_id())  +"]\t" + "\t" + str(tap.getBeverage()) + "\t" + str(tap.thisPour)
     
     # reset flow meter after each pour (2 secs of inactivity)
     if (tap.thisPour <= 0.23 and currentTime - tap.lastClick > 2000):
