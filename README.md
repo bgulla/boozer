@@ -11,7 +11,7 @@ docker run --rm  -d --name="boozer" \
     -t bgulla/boozer
 ```
 
-# Configuration
+# Configuration Sample
 ```
 [Taps]
 tap1_gpio_pin: 24
@@ -44,7 +44,7 @@ broker: localhost
 port: 1883
 ```
 
-# Grafana Integration
+## Grafana Integration
 
 
 ## Known Issues

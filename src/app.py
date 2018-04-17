@@ -148,7 +148,6 @@ while True:
         old_pour = pour_size
         scrollphat_cleared = False
     if (tap.thisPour > 0.23 and currentTime - tap.lastClick > 10000): # 10 seconds of inactivity causes a tweet
-#      volume_remaining = str(round(db.get_percentage(tap.get_tap_id()),2))
       print "[formattedpour]:", tap.getFormattedThisPour()
       print "[poursize]:", tap.thisPour
       pour_size = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER, 3)
