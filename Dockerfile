@@ -4,7 +4,7 @@ MAINTAINER <blgulla@ncsu.edu>
 
 RUN apt-get update; apt-get install -y python-dev  python-setuptools python-pip python-smbus python-rpi.gpio
 
-COPY ./requirements.txt /boozer/
+COPY ./src/requirements.txt /boozer/
 RUN pip install -r /boozer/requirements.txt
 COPY ./src/beer_database.py /boozer/
 COPY ./db.sqlite /boozer/
