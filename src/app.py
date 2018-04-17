@@ -94,7 +94,7 @@ def get_temperature():
 def record_pour(tap_id, pour):
   # update sqlite database
   db.update_tap(tap_id,pour)
-  logger.info( "[TAP ",tap_id, "] UPDATED IN DATABASE" )
+  logger.info( "[TAP "+ str(tap_id) + "] UPDATED IN DATABASE" )
   # TODO: Post to influx here to show most recent pour
 
 def update_mqtt(tap_id):
