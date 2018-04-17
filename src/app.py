@@ -12,15 +12,27 @@ import beer_database as db
 import twitter_notify
 import requests
 import ConfigParser
+import logging
 from pushbullet import Pushbullet
 import bar_mqtt
 
 DEGREES="°"
 DISABLED="disabled"
 
+# Setup the configuration
 CONFIG_FILE="./config.ini"
 config = ConfigParser.ConfigParser()
 config.read(CONFIG_FILE)
+
+# Set the logger
+logger = logging.getLogger()
+handler = logging.StreamHandler()
+formatter = logging.Formatter(
+        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.DEBUG)
+
 
 # setup twitter client
 if config.getboolean("Twitter","enabled"):
@@ -138,28 +150,33 @@ scrollphat_cleared = True
 print "[Temperature] " + get_temperature()
 
 while True:
+
   # Handle keyboard events
   currentTime = int(time.time() * FlowMeter.MS_IN_A_SECOND)
+
   for tap in taps:
     if tap.thisPour > 0.0:
       pour_size = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER, 3)
-      pour_size2 = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER, 2)
+      pour_size2 = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER, 2) # IDK what is going on here but it works and I am afraid to break it
       if pour_size != old_pour:
         print "Tap: %s\t Poursize: %s vs %s" % (tap.get_tap_id(),  pour_size, str(old_pour)) 
         scrollphat.set_brightness(7)
         scrollphat.write_string(str(pour_size2).replace("0.","."))
         old_pour = pour_size
         scrollphat_cleared = False
-    if (tap.thisPour > 0.23 and currentTime - tap.lastClick > 10000): # 10 seconds of inactivity causes a tweet
-      print "[formattedpour]:", tap.getFormattedThisPour()
-      print "[poursize]:", tap.thisPour
-      pour_size = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER, 3)
-      record_pour(tap.get_tap_id(), pour_size)
 
-      volume_remaining = str(round(db.get_percentage(tap.get_tap_id()),3) * 100)
+    if (tap.thisPour > 0.23 and currentTime - tap.lastClick > 10000): # 10 seconds of inactivity causes a tweet
+      # calculate how much beer was poured
+      pour_size = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER, 3)
+
+      # receord that pour into the database
+      record_pour(tap.get_tap_id(), pour_size)
 
       # is twitter enabled?
       if config.getboolean("Twitter", "enabled"):
+        # calculate how much beer is left in the keg
+        volume_remaining = str(round(db.get_percentage(tap.get_tap_id()), 3) * 100)
+
         # tweet of the record
         twitter.tweet_pour(tap.get_tap_id(),
                            tap.getFormattedThisPour(),
@@ -167,23 +184,31 @@ while True:
                            volume_remaining,
                            get_temperature())
 
+      # reset the counter
       tap.thisPour = 0.0
+
+      # clear the display
       scrollphat.clear()
       scrollphat_cleared = True
+
+      # publish the updated value to mqtt broker
       if config.getboolean("Mqtt","enabled"):
         update_mqtt(tap.get_tap_id())
+        logger.debug("pub mqtt tap:" + str(tap.get_tap_id()))
 
+    # display the pour in real time for debugging
     if tap.thisPour > 0.05:
-#      print currentTime - tap.lastClick 
-      print "[TAP "+ str(tap.get_tap_id())  +"]\t" + "\t" + str(tap.getBeverage()) + "\t" + str(tap.thisPour)
+        logger.debug( "[TAP "+ str(tap.get_tap_id())  +"]\t" + "\t" + str(tap.getBeverage()) + "\t" + str(tap.thisPour) )
     
     # reset flow meter after each pour (2 secs of inactivity)
     if (tap.thisPour <= 0.23 and currentTime - tap.lastClick > 2000):
-#      print "[CLEARING SCROLLPHAT]"
-#      scrollphat.clear()
+      pour_size = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER, 3)
+      record_pour(tap.get_tap_id(), pour_size)
       tap.thisPour = 0.0
-    if (currentTime - tap.lastClick > (2000*30)) and (SCROLLPHAT_ENABLED == True) and (scrollphat_cleared == False):
-      scrollphat.clear()
+    #if (currentTime - tap.lastClick > (2000*30)) and (SCROLLPHAT_ENABLED == True) and (scrollphat_cleared == False):
+    #  scrollphat.clear()
       #print "[CLEARING SCROLLPHAT]"
-      
-  time.sleep(0.01)    
+
+  # go night night
+  time.sleep(0.01)
+
