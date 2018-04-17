@@ -15,8 +15,10 @@ class FlowMeter():
   thisPour = 0.0 # in Liters
   totalPour = 0.0 # in Liters
   tap_id = 0
+  pin = -1
 
-  def __init__(self, displayFormat, beverage, tap_id):
+
+  def __init__(self, displayFormat, beverage, tap_id, pin):
     self.displayFormat = displayFormat
     self.beverage = beverage
     self.clicks = 0
@@ -28,6 +30,10 @@ class FlowMeter():
     self.totalPour = 0.0
     self.enabled = True
     self.tap_id = tap_id
+    self.pin = pin
+
+  def get_pin(self):
+    return self.pin
 
   def update(self, currentTime):
     self.clicks += 1
