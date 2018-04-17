@@ -15,7 +15,8 @@ class TwitterNotify():
 
 
   def tweet_pour(self, tap_id, volume_poured, beverage_name, volume_remaining, temperature):
-    msg = "I just poured " + volume_poured + " of " + beverage_name + " from tap "
+    msg = "I just poured " + volume_poured
+    # of " + beverage_name + " from tap "
           #+ str(tap_id) + " (" + volume_remaining + "% remaining) at " + str(temperature) + DEGREES
     self.post_tweet(msg)
 
