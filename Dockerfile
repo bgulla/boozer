@@ -10,9 +10,9 @@ COPY ./src/beer_database.py /boozer/
 COPY ./db.sqlite /boozer/
 COPY ./src/mqtt_updater.py /boozer/
 COPY ./src/flowmeter.py /boozer/
-COPY ./src/bartwitter.py /boozer/
+COPY ./src/twitter_notify.py /boozer/
 COPY ./src/bar_mqtt.py /boozer/
 COPY ./src/app.py /boozer/
 
-
-CMD ["python", "/boozer/app.py]
+WORKDIR /boozer
+CMD ["python", "app.py"]
