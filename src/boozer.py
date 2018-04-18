@@ -17,14 +17,45 @@ import bar_mqtt
 
 DEGREES="°"
 DISABLED="disabled"
+
+
+class Boozer():
+
+  TWITTER_ENABLED = False
+  SCROLLPHAT_ENABLED = False
+  MQTT_ENABLED = False
+  MQTT_BROKER = "null"
+
+  def __init__(self, config_filepath="./config.ini"):
+
+    # Read in configuration
+    CONFIG_FILE = "./config.ini"
+    config = ConfigParser.ConfigParser()
+    config.read(CONFIG_FILE)
+
+    # Parse out configuration
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 scrollphat_cleared = True
 old_pour=0 # TODO, this should be a part of the per-tap instances, not gloabal.
 
 
 # Setup the configuration
-CONFIG_FILE="./config.ini"
-config = ConfigParser.ConfigParser()
-config.read(CONFIG_FILE)
+
 
 SCROLLPHAT_ENABLED = False
 if config.get("Scrollphat",'enabled') == "True":
@@ -42,10 +73,10 @@ logger.setLevel(logging.DEBUG)
 
 
 # setup twitter client
-if config.getboolean("Twitter","enabled"):
+if TWITTER_ENABLED:
   twitter = twitter_notify.TwitterNotify(config)
 
-if config.getboolean("Mqtt","enabled"):
+if MQTT_ENABLED:
   mqtt_client = bar_mqtt.BoozerMqtt(config.get("Mqtt","broker"))
 
 #pb = Pushbullet(config.get("Pushbullet","api_key"))
