@@ -8,7 +8,6 @@ COPY ./src/requirements.txt /boozer/
 RUN pip install -r /boozer/requirements.txt
 COPY ./src/beer_database.py /boozer/
 COPY ./db.sqlite /boozer/
-COPY ./src/mqtt_updater.py /boozer/
 COPY ./src/flowmeter.py /boozer/
 COPY ./src/twitter_notify.py /boozer/
 COPY ./src/bar_mqtt.py /boozer/

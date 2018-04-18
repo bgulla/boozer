@@ -94,16 +94,12 @@ def get_temperature():
 def record_pour(tap_id, pour):
   # update sqlite database
   db.update_tap(tap_id,pour)
-  logger.info( "[TAP "+ str(tap_id) + "] UPDATED IN DATABASE" )
   # TODO: Post to influx here to show most recent pour
 
 def update_mqtt(tap_id):
-  global config
-  broker = config.get("Mqtt","broker")
   percent= db.get_percentage100(tap_id)
   topic = "bar/tap%s" % str(tap_id)
   mqtt_client.pub_mqtt(topic,str(percent))
-  logger.info("Updated mqtt for topic: " + topic )
 
 # Update the values in mqtt
 if config.getboolean("Mqtt","enabled"):
@@ -177,7 +173,6 @@ while True:
       if config.getboolean("Twitter", "enabled"):
         # calculate how much beer is left in the keg
         volume_remaining = str(round(db.get_percentage(tap.get_tap_id()), 3) * 100)
-
         # tweet of the record
         twitter.tweet_pour(tap.get_tap_id(),
                            tap.getFormattedThisPour(),
@@ -195,21 +190,14 @@ while True:
       # publish the updated value to mqtt broker
       if config.getboolean("Mqtt","enabled"):
         update_mqtt(tap.get_tap_id())
-        logger.debug("pub mqtt tap:" + str(tap.get_tap_id()))
 
     # display the pour in real time for debugging
     if tap.thisPour > 0.05:
-        logger.debug( "[TAP "+ str(tap.get_tap_id())  +"]\t" + "\t" + str(tap.getBeverage()) + "\t" + str(tap.thisPour) )
+        logger.debug( "registered new pour tap number  "+ str(tap.get_tap_id())  +"]\t" + "\t" + str(tap.getBeverage()) + "\t" + str(tap.thisPour) )
     
     # reset flow meter after each pour (2 secs of inactivity)
     if (tap.thisPour <= 0.23 and currentTime - tap.lastClick > 2000):
-      #pour_size = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER, 3)
-      #record_pour(tap.get_tap_id(), pour_size)
       tap.thisPour = 0.0
-    #if (currentTime - tap.lastClick > (2000*30)) and (SCROLLPHAT_ENABLED == True) and (scrollphat_cleared == False):
-    #  scrollphat.clear()
-      #print "[CLEARING SCROLLPHAT]"
-
   # go night night
   time.sleep(0.01)
 

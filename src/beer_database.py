@@ -1,4 +1,7 @@
 import sqlite3
+import logging
+
+log = logging.getLogger(__name__)
 
 DB_FILE="db.sqlite"
 TABLE_NAME="beer"

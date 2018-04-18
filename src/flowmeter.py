@@ -1,5 +1,9 @@
 import time
 import random
+import logging
+
+log = logging.getLogger(__name__)
+
 class FlowMeter():
   PINTS_IN_A_LITER = 2.11338
   SECONDS_IN_A_MINUTE = 60
@@ -16,7 +20,6 @@ class FlowMeter():
   totalPour = 0.0 # in Liters
   tap_id = 0
   pin = -1
-
 
   def __init__(self, displayFormat, beverage, tap_id, pin):
     self.displayFormat = displayFormat

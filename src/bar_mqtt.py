@@ -2,6 +2,9 @@
 
 import paho.mqtt.client as paho
 from random import randint
+import logging
+
+log = logging.getLogger(__name__)
 
 class BoozerMqtt():
     def __init__(self, brokerhost, port = 1883):
@@ -11,7 +14,7 @@ class BoozerMqtt():
     def pub_mqtt(self, topic,value):
         client1= paho.Client("control1")                           #create client object
         client1.connect(self.broker,self.port)                                 #establish connection
-        print "[MQTT BROKER CONNECTION SUCCESSFULL] topic: %s | value: %s " % (topic,value)
+        log.info("mqtt topic updated: topic: "+topic+" | value: "+ value)
         return client1.publish(topic,value)                   #publish
 
     def get_value(self,topic):
