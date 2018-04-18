@@ -108,7 +108,7 @@ else:
 def register_tap( tap_obj):
   currentTime = int(time.time() * FlowMeter.MS_IN_A_SECOND)
   tap_obj.update(currentTime)
-  logger.info("event-bus: registered tap " + tap_obj.get_tap_id() + "successfully" )
+  logger.info("event-bus: registered tap " + str(tap_obj.get_tap_id()) + "successfully" )
 
 for tap in taps: # if something is broken, it's probably this
   GPIO.add_event_detect(tap.get_pin(), GPIO.RISING, callback=lambda *a: register_tap(tap), bouncetime=20)
