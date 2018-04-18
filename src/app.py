@@ -15,10 +15,9 @@ import ConfigParser
 import logging
 import bar_mqtt
 
-DEGREES="°"
-DISABLED="disabled"
+DEGREES = "°"
+DISABLED ="disabled"
 scrollphat_cleared = True
-old_pour=0 # TODO, this should be a part of the per-tap instances, not gloabal.
 
 
 # Setup the configuration
@@ -106,7 +105,7 @@ else:
 
 
 # new hotness
-def register_tap(channel, tap_id):
+def register_tap( tap_id):
   currentTime = int(time.time() * FlowMeter.MS_IN_A_SECOND)
   taps[tap_id].update(currentTime)
   logger.info("event-bus: registered tap " + tap_id + "successfully" )
@@ -128,11 +127,11 @@ while True:
     if tap.thisPour > 0.0:
       pour_size = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER, 3)
       pour_size2 = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER, 2) # IDK what is going on here but it works and I am afraid to break it
-      if pour_size != old_pour:
-        logger.debug( "Tap: %s\t Poursize: %s vs %s" % (tap.get_tap_id(),  pour_size, str(old_pour)))
+      if pour_size != tap.previous_pour:
+        logger.debug( "Tap: %s\t Poursize: %s vs %s" % (tap.get_tap_id(),  pour_size, str(tap.previous_pour)))
         scrollphat.set_brightness(7)
         scrollphat.write_string(str(pour_size2).replace("0.","."))
-        old_pour = pour_size
+        tap.set_previous_pour(pour_size)
         scrollphat_cleared = False
 
     if (tap.thisPour > 0.23 and currentTime - tap.lastClick > 10000): # 10 seconds of inactivity causes a tweet

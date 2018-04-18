@@ -21,6 +21,7 @@ class FlowMeter():
   totalPour = 0.0 # in Liters
   tap_id = 0
   pin = -1
+  previous_pour = 0.0
 
   def __init__(self, displayFormat, beverage, tap_id, pin):
     self.displayFormat = displayFormat
@@ -35,10 +36,14 @@ class FlowMeter():
     self.enabled = True
     self.tap_id = tap_id
     self.pin = pin
+
     GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
   def get_pin(self):
     return self.pin
+
+  def set_previous_pour(self, vol):
+    self.previous_pour = vol
 
   def update(self, currentTime):
     self.clicks += 1
