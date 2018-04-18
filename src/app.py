@@ -6,7 +6,7 @@ import time
 import math
 import logging
 import scrollphat
-import RPi.GPIO as GPIO
+#import RPi.GPIO as GPIO
 from flowmeter import *
 import beer_database as db
 import twitter_notify
@@ -43,33 +43,33 @@ if config.getboolean("Mqtt","enabled"):
 
 #pb = Pushbullet(config.get("Pushbullet","api_key"))
 
-TAP1_PIN=config.getint("Taps","tap1_gpio_pin")
-TAP2_PIN=config.getint("Taps","tap2_gpio_pin")
-TAP3_PIN=config.getint("Taps","tap3_gpio_pin")
-TAP4_PIN=config.getint("Taps","tap4_gpio_pin")
+tapobj = []
 
 GPIO.setmode(GPIO.BCM) # use real GPIO numbering
 
 # Setup the Taps
+"""
 GPIO.setup(TAP1_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(TAP2_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(TAP3_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(TAP4_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+"""
+
+
 
 # set up the flow meters
 taps = []
 # Tap 1
 tap1 = FlowMeter( "not metric", [config.get("Taps", "tap1_beer_name")], tap_id=1, pin=config.getint("Taps", "tap1_gpio_pin"))
-GPIO.setup(TAP1_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
 # Tap 2
 tap2 = FlowMeter( "not metric", [config.get("Taps", "tap2_beer_name")], tap_id=2, pin=config.getint("Taps", "tap2_gpio_pin"))
-GPIO.setup(TAP2_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 # Tap 3
 tap3 = FlowMeter( "not metric", [config.get("Taps", "tap3_beer_name")], tap_id=3, pin=config.getint("Taps", "tap3_gpio_pin"))
-GPIO.setup(TAP3_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 # Tap 4
 tap4 = FlowMeter( "not metric", [config.get("Taps", "tap4_beer_name")], tap_id=4, pin=config.getint("Taps", "tap4_gpio_pin"))
-GPIO.setup(TAP4_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+
 taps = {tap1,tap2,tap3,tap4}
 
 # More config
@@ -110,7 +110,8 @@ if config.getboolean("Mqtt","enabled"):
   update_mqtt(4)
 else:
   logger.info("[Mqtt] disabled.")
-  
+
+"""  
 def register_tap1(channel):
   currentTime = int(time.time() * FlowMeter.MS_IN_A_SECOND)
   if tap1.enabled == True:
@@ -127,13 +128,25 @@ def register_tap4(channel):
   currentTime = int(time.time() * FlowMeter.MS_IN_A_SECOND)
   if tap4.enabled == True:
     tap4.update(currentTime)
+"""
+
+# new hotness
+def register_tap(channel, tap_id):
+  currentTime = int(time.time() * FlowMeter.MS_IN_A_SECOND)
+  taps[tap_id].update(currentTime)
+  logger.info("event-bus: registered tap " + tap_id + "successfully" )
 
 
 # TODO, look into this and how to pass parameters to doAClick function
-GPIO.add_event_detect(TAP4_PIN, GPIO.RISING, callback=register_tap1, bouncetime=20) # TAP 4
-GPIO.add_event_detect(TAP3_PIN, GPIO.RISING, callback=register_tap2, bouncetime=20) # TAP 3
-GPIO.add_event_detect(TAP2_PIN, GPIO.RISING, callback=register_tap3, bouncetime=20) # TAP 2
-GPIO.add_event_detect(TAP1_PIN, GPIO.RISING, callback=register_tap4, bouncetime=20) # TAP 1
+for tap in taps: # if something is broken, it's probably this
+  GPIO.add_event_detect(tap.get_pin(), GPIO.RISING, callback=lambda *a: register_tap(tap.get_tap_id()), bouncetime=20)
+
+#GPIO.add_event_detect(TAP4_PIN, GPIO.RISING, callback=register_tap1, bouncetime=20) # TAP 4
+#GPIO.add_event_detect(TAP3_PIN, GPIO.RISING, callback=register_tap2, bouncetime=20) # TAP 3
+#GPIO.add_event_detect(TAP2_PIN, GPIO.RISING, callback=register_tap3, bouncetime=20) # TAP 2
+#GPIO.add_event_detect(TAP1_PIN, GPIO.RISING, callback=register_tap4, bouncetime=20) # TAP 1
+
+# TODO: callback=lambda *a: myCallBack(pin1, bool1, Ftimer1, Etimer1)
 
 #volume_remaining = str(round(db.get_percentage(4),3) * 100)
 #print "TAP 4 remaining! %s " % volume_remaining

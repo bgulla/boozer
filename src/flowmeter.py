@@ -1,6 +1,7 @@
 import time
 import random
 import logging
+import RPi.GPIO as GPIO
 
 log = logging.getLogger(__name__)
 
@@ -34,6 +35,7 @@ class FlowMeter():
     self.enabled = True
     self.tap_id = tap_id
     self.pin = pin
+    GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
   def get_pin(self):
     return self.pin
