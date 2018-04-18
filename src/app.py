@@ -157,8 +157,10 @@ scrollphat_cleared = True
 
 
 # Initial info
-logger.info( "[Temperature] " + get_temperature())
+logger.info( "Temperature: " + get_temperature())
 
+
+logger.info("Boozer Intialized! Waiting for pours. Drink up, be merry!")
 while True:
 
   # Handle keyboard events
