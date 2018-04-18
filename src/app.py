@@ -8,15 +8,16 @@ import logging
 import scrollphat
 #import RPi.GPIO as GPIO
 from flowmeter import *
-import beer_database as db
+import beer_db
 import twitter_notify
 import requests
 import ConfigParser
 import logging
 import bar_mqtt
 
-DEGREES = "°"
-DISABLED ="disabled"
+
+GPIO.setmode(GPIO.BCM) # use real GPIO numbering
+
 scrollphat_cleared = True
 
 
@@ -25,9 +26,13 @@ CONFIG_FILE="./config.ini"
 config = ConfigParser.ConfigParser()
 config.read(CONFIG_FILE)
 
+db = beer_db.BeerDB("./db.sqlite") #TODO: replace this with configuration value
+
 SCROLLPHAT_ENABLED = False
 if config.get("Scrollphat",'enabled') == "True":
   scrollphat.set_brightness(7)
+
+MQTT_ENABLED = False
 
 
 # Set the logger
@@ -45,24 +50,12 @@ if config.getboolean("Twitter","enabled"):
   twitter = twitter_notify.TwitterNotify(config)
 
 if config.getboolean("Mqtt","enabled"):
+  MQTT_ENABLED = True
   mqtt_client = bar_mqtt.BoozerMqtt(config.get("Mqtt","broker"))
 
-#pb = Pushbullet(config.get("Pushbullet","api_key"))
-
-tapobj = []
-
-GPIO.setmode(GPIO.BCM) # use real GPIO numbering
-
-# Setup the Taps
-"""
-GPIO.setup(TAP1_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(TAP2_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(TAP3_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(TAP4_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-"""
 
 # set up the flow meters
-taps = []
+taps = [] # TODO, make this dynamic by reading teh configuration files
 # Tap 1
 tap1 = FlowMeter( "not metric", [config.get("Taps", "tap1_beer_name")], tap_id=1, pin=config.getint("Taps", "tap1_gpio_pin"))
 tap2 = FlowMeter( "not metric", [config.get("Taps", "tap2_beer_name")], tap_id=2, pin=config.getint("Taps", "tap2_gpio_pin"))
@@ -93,17 +86,6 @@ def update_mqtt(tap_id):
   topic = "bar/tap%s" % str(tap_id)
   mqtt_client.pub_mqtt(topic,str(percent))
 
-# Update the values in mqtt
-if config.getboolean("Mqtt","enabled"):
-  logger.info( "[Mqtt] enabled.")
-  update_mqtt(1)
-  update_mqtt(2)
-  update_mqtt(3)
-  update_mqtt(4)
-else:
-  logger.info("[Mqtt] disabled.")
-
-
 # new hotness
 def register_tap( tap_obj):
   currentTime = int(time.time() * FlowMeter.MS_IN_A_SECOND)
@@ -112,6 +94,7 @@ def register_tap( tap_obj):
 
 for tap in taps: # if something is broken, it's probably this
   GPIO.add_event_detect(tap.get_pin(), GPIO.RISING, callback=lambda *a: register_tap(tap), bouncetime=20)
+  if MQTT_ENABLED : update_mqtt(tap.get_tap_id())
 
 
 # Initial info
@@ -128,16 +111,15 @@ while True:
       pour_size = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER, 3)
       pour_size2 = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER, 2) # IDK what is going on here but it works and I am afraid to break it
       if pour_size != tap.previous_pour:
-        logger.debug( "Tap: %s\t Poursize: %s vs %s" % (tap.get_tap_id(),  pour_size, str(tap.previous_pour)))
+        logger.debug( "Tap: %s\t Poursize: %s vs %s" % (str(tap.get_tap_id()),  str(pour_size), str(tap.previous_pour)))
         scrollphat.set_brightness(7)
         scrollphat.write_string(str(pour_size2).replace("0.","."))
         tap.set_previous_pour(pour_size)
         scrollphat_cleared = False
 
     if (tap.thisPour > 0.23 and currentTime - tap.lastClick > 10000): # 10 seconds of inactivity causes a tweet
-      # calculate how much beer was poured
-      pour_size = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER, 3)
 
+      pour_size = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER, 3)
       # receord that pour into the database
       record_pour(tap.get_tap_id(), pour_size)
 
@@ -160,16 +142,14 @@ while True:
       scrollphat_cleared = True
 
       # publish the updated value to mqtt broker
-      if config.getboolean("Mqtt","enabled"):
-        update_mqtt(tap.get_tap_id())
+      if config.getboolean("Mqtt","enabled"): update_mqtt(tap.get_tap_id())
 
     # display the pour in real time for debugging
-    if tap.thisPour > 0.05:
-        logger.debug( "registered new pour tap number  "+ str(tap.get_tap_id())  +"]\t" + "\t" + str(tap.getBeverage()) + "\t" + str(tap.thisPour) )
+    if tap.thisPour > 0.05: logger.debug("[POUR EVENT] " + str(tap.get_tap_id()) + ":" + str(tap.thisPour) )
     
     # reset flow meter after each pour (2 secs of inactivity)
-    if (tap.thisPour <= 0.23 and currentTime - tap.lastClick > 2000):
-      tap.thisPour = 0.0
+    if (tap.thisPour <= 0.23 and currentTime - tap.lastClick > 2000): tap.thisPour = 0.0
+
   # go night night
   time.sleep(0.01)
 

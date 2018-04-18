@@ -8,7 +8,7 @@ import logging
 import scrollphat
 #import RPi.GPIO as GPIO
 from flowmeter import *
-import beer_database as db
+import beer_db as db
 import twitter_notify
 import requests
 import ConfigParser
