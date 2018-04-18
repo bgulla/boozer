@@ -105,13 +105,13 @@ else:
 
 
 # new hotness
-def register_tap( tap_id):
+def register_tap( tap_obj):
   currentTime = int(time.time() * FlowMeter.MS_IN_A_SECOND)
-  taps[tap_id].update(currentTime)
-  logger.info("event-bus: registered tap " + tap_id + "successfully" )
+  tap_obj.update(currentTime)
+  logger.info("event-bus: registered tap " + tap_obj.get_tap_id() + "successfully" )
 
 for tap in taps: # if something is broken, it's probably this
-  GPIO.add_event_detect(tap.get_pin(), GPIO.RISING, callback=lambda *a: register_tap(tap.get_tap_id()), bouncetime=20)
+  GPIO.add_event_detect(tap.get_pin(), GPIO.RISING, callback=lambda *a: register_tap(tap), bouncetime=20)
 
 
 # Initial info
