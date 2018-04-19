@@ -1,5 +1,5 @@
 # boozer - Automated Raspberry-Pi powered Kegerator
-![Bar Build](https://github.com/bgulla/boozer/blob/master/img/bar-final.jpg?raw=true)
+![Bar Build](https://github.com/bgulla/boozer/blob/master/img/bar.jpg?raw=true)
 ## Features
 
 [Photo Gallery](https://imgur.com/a/7jnrc)
