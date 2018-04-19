@@ -1,8 +1,8 @@
 # boozer - Automated Raspberry-Pi powered Kegerator
-
+![Bar Build](https://github.com/bgulla/boozer/blob/master/img/bar-final.jpg?raw=true)
 ## Features
 
-[Photo Gallery]()
+[Photo Gallery](https://imgur.com/a/7jnrc)
 
 ## Hardware
 The following hardware was used in the inital build of boozer but not necessarily required.
