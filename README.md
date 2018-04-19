@@ -1,6 +1,17 @@
 # boozer - Automated Raspberry-Pi powered Kegerator
 
+## Features
+
+[Photo Gallery]()
+
 ## Hardware
+The following hardware was used in the inital build of boozer but not necessarily required.
+ * [Raspberry Pi 3+](https://www.adafruit.com/product/3055)
+ * [Flow Sensors (x4)](https://www.adafruit.com/product/828)
+   * [1/2 to 1/4 Adapter (x8)](https://www.amazon.com/gp/product/B00AB5X28G)
+ * [ScrollPhat LED Display](https://shop.pimoroni.com/products/scroll-phat)
+ 
+ 
 
 ## Running in Docker
 ```bash
@@ -11,7 +22,10 @@ docker run --rm  -d --name="boozer" \
     -t bgulla/boozer
 ```
 
-# Configuration Sample
+## Twitter Alerts
+After creating a development application form at [https://apps.twitter.com/](https://apps.twitter.com), Boozer can tweet out whenever a new pour event is detected. See example at [ibuiltabar](https://twitter.com/ibuiltabar).
+
+## Configuration Sample
 ```
 [Taps]
 tap1_gpio_pin: 24
@@ -45,7 +59,7 @@ port: 1883
 ```
 
 ## Grafana Integration
+![Grafana is awesome](https://github.com/bgulla/boozer/dashboard/bar-dashboard.png?raw=true)
+With a little help from [Telegraf](https://github.com/influxdata/telegraf) and the Mqtt message broker, you bar stats are viewable in real time with Grafana.
 
 
-## Known Issues
- * There is currently no way to reset the tap values without manual sqlite modification or running the beer_database.py file's main method. (warning: this will reset all taps)
