@@ -1,4 +1,4 @@
-# boozer - Automated Raspberry-Pi powered Kegerator
+# boozer - Automated Raspberry-Pi Powered Kegerator
 
 ![The Bar That Started It All](https://github.com/bgulla/boozer/blob/master/img/bar.jpg?raw=true)
 ## Features
