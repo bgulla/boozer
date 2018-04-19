@@ -2,7 +2,9 @@ import sqlite3
 import logging
 
 log = logging.getLogger(__name__)
-
+"""
+All your database are belong to us.
+"""
 
 class BeerDB():
     DB_FILEPATH = "db.sqlite"
@@ -138,27 +140,3 @@ class BeerDB():
         """
         self.set_tap(self.tap_id, 0)
         print "Reset Tap ", self.tap_id
-
-
-    """if __name__ == '__main__':
-      try:
-    #    reset_tap_val(4)
-        print_all_taps()
-        reset_tap_val(1)
-        reset_tap_val(2)
-        reset_tap_val(3)
-        reset_tap_val(4)
-        print "[Tap 1]\t",get_percentage100(1),"%"
-        print "[Tap 2]\t",get_percentage100(2),"%"
-        print "[Tap 3]\t",get_percentage100(3),"%"
-        print "[Tap 4]\t",get_percentage100(4),"%"
-        #create_table()
-      except:
-        pass
-        """
-    # print "Tap 1", get_tap(1)
-    # update_tap(1,2.5)
-    # print "percentage: ", get_percentage(1)
-
-
-    # create_table()
