@@ -132,7 +132,7 @@ while True:
                            tap.getFormattedThisPour(),
                            tap.getBeverage(),
                            volume_remaining,
-                           get_temperature())
+                           get_temperature()) # TODO make temperature optional
 
       # reset the counter
       tap.thisPour = 0.0
