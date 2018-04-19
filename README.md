@@ -4,7 +4,7 @@
 ## Features
 Python-based Kegerator volume tracking tool. 
  * Track the remaining beer volume of your kegs! Flow sensors keep a running log of your remaining beer volume, using SQLITE.
- * Twitter functionality. Sharing is caring.
+ * [Twitter](https://twitter.com/ibuiltabar) functionality. Sharing is caring.
  * Temperature Monitoring. [via sensors2json microservice](https://github.com/bgulla/sensor2json)
  
 [Photo Gallery](https://imgur.com/a/7jnrc)
@@ -20,6 +20,8 @@ The following hardware was used in the inital build of boozer but not necessaril
  
 
 ## Running in Docker
+Simplify deployment with Docker. Instructions for installing docker on RaspberryPi's [here](https://www.raspberrypi.org/blog/docker-comes-to-raspberry-pi/).
+
 ```bash
 docker run --rm  -d --name="boozer" \
     --privileged \
@@ -69,3 +71,6 @@ With a little help from [Telegraf](https://github.com/influxdata/telegraf) and t
 
 ![Grafana is awesome](https://github.com/bgulla/boozer/blob/master/dashboard/bar-dashboard.png?raw=true)
 
+# Home Assistant
+Home Assistant is a great tool to pull together all of your home's smart IOT devices into an easy to use, secure tool. Since Boozer can speak mqtt, it can be easily integrated into [Home Assistant](https://home-assistant.io).
+![Home Assistant](https://github.com/bgulla/boozer/blob/master/dashboard/hass.jpg?raw=true)
