@@ -73,4 +73,4 @@ With a little help from [Telegraf](https://github.com/influxdata/telegraf) and t
 
 # Home Assistant
 Home Assistant is a great tool to pull together all of your home's smart IOT devices into an easy to use, secure tool. Since Boozer can speak mqtt, it can be easily integrated into [Home Assistant](https://home-assistant.io).
-![Home Assistant](https://github.com/bgulla/boozer/blob/master/dashboard/hass.jpg?raw=true)
+![Home Assistant](https://github.com/bgulla/boozer/blob/master/img/hass.jpg?raw=true)
