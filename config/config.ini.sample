@@ -15,10 +15,10 @@ endpoint: http://10.0.1.48:8888/chillerf
 
 [Twitter]
 enabled: True
-consumer_key="reowC2h6pDSVscIYjwTpoHbdo"
-consumer_secret="GimzIKeij8nzQBm7FvJSBWH7bClEkqNLPEeeocqUw3AnKXFXcP"
-access_token="1549176829-egexxImKAWA65IPK49kHhCPEh4H9NUM8bdrcTMP"
-access_token_secret="JUgjCETvBd4EJ0msBStf1AU5LGfGpiQJLk5xeXa8wBXp9"
+consumer_key=""
+consumer_secret=""
+access_token=""
+access_token_secret=""
 
 [Logging]
 file: /tmp/beer.log
