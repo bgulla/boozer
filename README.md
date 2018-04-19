@@ -1,7 +1,12 @@
 # boozer - Automated Raspberry-Pi powered Kegerator
-![Bar Build](https://github.com/bgulla/boozer/blob/master/img/bar.jpg?raw=true)
-## Features
 
+![The Bar That Started It All](https://github.com/bgulla/boozer/blob/master/img/bar.jpg?raw=true)
+## Features
+Python-based Kegerator volume tracking tool. 
+ * Track the remaining beer volume of your kegs! Flow sensors keep a running log of your remaining beer volume, using SQLITE.
+ * Twitter functionality. Sharing is caring.
+ * Temperature Monitoring. [via sensors2json microservice](https://github.com/bgulla/sensor2json)
+ 
 [Photo Gallery](https://imgur.com/a/7jnrc)
 
 ## Hardware
@@ -10,6 +15,7 @@ The following hardware was used in the inital build of boozer but not necessaril
  * [Flow Sensors (x4)](https://www.adafruit.com/product/828)
    * [1/2 to 1/4 Adapter (x8)](https://www.amazon.com/gp/product/B00AB5X28G)
  * [ScrollPhat LED Display](https://shop.pimoroni.com/products/scroll-phat)
+ * [DS18b20 Waterproof Temperature Sensor](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-11-ds18b20-temperature-sensing/hardware)
  
  
 
