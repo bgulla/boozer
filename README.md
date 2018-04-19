@@ -16,7 +16,7 @@ The following hardware was used in the inital build of boozer but not necessaril
    * [1/2 to 1/4 Adapter (x8)](https://www.amazon.com/gp/product/B00AB5X28G)
  * [ScrollPhat LED Display](https://shop.pimoroni.com/products/scroll-phat)
  * [DS18b20 Waterproof Temperature Sensor](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-11-ds18b20-temperature-sensing/hardware)
- 
+ ![Home Assistant](https://github.com/bgulla/boozer/blob/master/img/breadboard.jpg?raw=true)
  
 
 ## Running in Docker
