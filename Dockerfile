@@ -11,7 +11,7 @@ COPY ./db.sqlite /boozer/
 COPY ./src/flowmeter.py /boozer/
 COPY ./src/twitter_notify.py /boozer/
 COPY ./src/bar_mqtt.py /boozer/
-COPY ./src/app.py /boozer/
+COPY ./src/boozer.py /boozer/
 
 WORKDIR /boozer
-CMD ["python", "app.py"]
+CMD ["python", "boozer.py"]
