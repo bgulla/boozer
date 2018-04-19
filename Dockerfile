@@ -1,6 +1,5 @@
 FROM resin/rpi-raspbian
-MAINTAINER <hey@gulla.xyz>
-
+MAINTAINER <brandon@brandongulla.com>
 
 RUN apt-get update; apt-get install -y python-dev  python-setuptools python-pip python-smbus python-rpi.gpio
 
