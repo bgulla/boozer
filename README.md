@@ -60,5 +60,6 @@ port: 1883
 
 ## Grafana Integration
 With a little help from [Telegraf](https://github.com/influxdata/telegraf) and the Mqtt message broker, you bar stats are viewable in real time with Grafana.
+
 ![Grafana is awesome](https://github.com/bgulla/boozer/blob/master/dashboard/bar-dashboard.png?raw=true)
 
