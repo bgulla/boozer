@@ -25,7 +25,7 @@ docker run --rm  -d --name="boozer" \
 ## Twitter Alerts
 After creating a development application form at [https://apps.twitter.com/](https://apps.twitter.com), Boozer can tweet out whenever a new pour event is detected. See example at [ibuiltabar](https://twitter.com/ibuiltabar).
 
-[Twitter Alerts](https://github.com/bgulla/boozer/blob/master/img/twitter.png?raw=true)
+[Twitter Alerts](https://github.com/bgulla/boozer/blob/master/img/twitter.jpg?raw=true)
 
 ## Configuration Sample
 ```
