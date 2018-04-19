@@ -32,7 +32,7 @@ broker: 10.0.1.128
 port: 1883
 
 [Pushbullet]
-api_key=o.OMS2bxYwyKd3Mcg02xH7HNdJ49EU9sxq
+api_key=""
 
 [Untappd]
 api_key=asdf
