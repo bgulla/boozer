@@ -1,7 +1,7 @@
 FROM resin/rpi-raspbian
 MAINTAINER <brandon@brandongulla.com>
 
-RUN apt-get update; apt-get install -y python-dev  python-setuptools python-pip python-smbus python-rpi.gpio
+RUN apt-get update; apt-get install -y python-dev  python-setuptools python-pip python-smbus python-rpi.gpio ; apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 COPY ./src/requirements.txt /boozer/
 RUN pip install -r /boozer/requirements.txt
