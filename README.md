@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 # boozer - Automated Raspberry-Pi powered Kegerator
 
 ![The Bar That Started It All](https://github.com/bgulla/boozer/blob/master/img/bar.jpg?raw=true)
@@ -6,6 +7,9 @@
 Python-based Kegerator volume tracking tool. 
 =======
 # boozer - Kegerator Monitoring Toolkit 
+=======
+# boozer - Automated Raspberry-Pi Powered Kegerator
+>>>>>>> parent of 566b421... Update README.md
 
 ![The Bar That Started It All](https://github.com/bgulla/boozer/blob/master/img/bar.jpg?raw=true)
 ## Features
