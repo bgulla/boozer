@@ -134,9 +134,10 @@ class BeerDB():
 
     def reset_tap_val(self, tap_id):
         """
+        Resets a keg to have 0 volume poured in the db.
 
         :param tap_id:
         :return:
         """
-        self.set_tap(self.tap_id, 0)
-        print "Reset Tap ", self.tap_id
+        self.set_tap(tap_id, 0)
+        print "Reset Tap ", tap_id
