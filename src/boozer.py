@@ -98,6 +98,16 @@ def update_mqtt(tap_id):
     topic = "bar/tap%s" % str(tap_id)
     mqtt_client.pub_mqtt(topic, str(percent))
 
+def scroll_once(msg):
+    scrollphat.write_string(msg, 11)
+    length = scrollphat.buffer_len()
+
+    for i in range(length):
+        try:
+            scrollphat.scroll()
+            time.sleep(0.1)
+        except KeyboardInterrupt:
+            scrollphat.clear()
 
 def register_tap(tap_obj):
     """
@@ -147,11 +157,12 @@ while True:
                 # calculate how much beer is left in the keg
                 volume_remaining = str(round(db.get_percentage(tap.get_tap_id()), 3) * 100)
                 # tweet of the record
-                twitter.tweet_pour(tap.get_tap_id(),
+                msg = twitter.tweet_pour(tap.get_tap_id(),
                                    tap.getFormattedThisPour(),
                                    tap.getBeverage(),
                                    volume_remaining,
                                    get_temperature())  # TODO make temperature optional
+                if SCROLLPHAT_ENABLED : scroll_once(msg)
 
             # reset the counter
             tap.thisPour = 0.0

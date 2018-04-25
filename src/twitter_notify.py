@@ -37,14 +37,12 @@ class TwitterNotify():
         :param temperature: float
         :return: nothing
         """
-        msg = "I just poured " + volume_poured
-        # of " + beverage_name + " from tap "
-        #+ str(tap_id) + " (" + volume_remaining + "% remaining) at " + str(temperature) + DEGREES
+        msg = "I just poured " + volume_poured + " from tap " + str(tap_id) + " (" + volume_remaining + "% remaining) at " + str(temperature) + DEGREES
         try:
             self.post_tweet(msg)
         except:
             log.error("unable to submit tweet")
-        return
+        return msg
 
     def post_tweet(self,tweet):
         """

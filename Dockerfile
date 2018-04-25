@@ -14,16 +14,17 @@ ENV APP_HOME=/boozer
 
 COPY ./src/requirements.txt /boozer/
 RUN pip install -r /boozer/requirements.txt
-COPY ./src/beer_database.py /boozer/
+COPY ./src/beer_db.py /boozer/
 COPY ./db.sqlite /boozer/
 COPY ./src/flowmeter.py /boozer/
 COPY ./src/twitter_notify.py /boozer/
 COPY ./src/bar_mqtt.py /boozer/
 COPY ./src/boozer.py /boozer/
+COPY ./src/toolkit.py /boozer/
 
 RUN chown -R app:app $APP_HOME
 
-USER app
+#USER app
 
 WORKDIR /boozer
 CMD ["python", "boozer.py"]
