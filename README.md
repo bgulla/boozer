@@ -1,8 +1,8 @@
-# boozer - Automated Raspberry-Pi Powered Kegerator
+# boozer - Kegerator Monitoring Toolkit 
 
 ![The Bar That Started It All](https://github.com/bgulla/boozer/blob/master/img/bar.jpg?raw=true)
 ## Features
-Python-based Kegerator volume tracking tool. 
+Kegerator monitoring/volume tracking tool writting in Python. 
  * Track the remaining beer volume of your kegs! Flow sensors keep a running log of your remaining beer volume, using SQLITE.
  * [Twitter](https://twitter.com/ibuiltabar) functionality. Sharing is caring.
  * Temperature Monitoring. [via sensors2json microservice](https://github.com/bgulla/sensor2json)
@@ -46,7 +46,6 @@ tap2_beer_name: Water
 tap3_beer_name: disabled
 tap4_beer_name: disabled
 
-
 [Temperature]
 enabled: True
 endpoint: http://localhost:8888/chillerf
@@ -68,7 +67,7 @@ port: 1883
 ```
 
 ## Grafana Integration
-With a little help from [Telegraf](https://github.com/influxdata/telegraf) and the Mqtt message broker, you bar stats are viewable in real time with Grafana.
+With a little help from [Telegraf](https://github.com/influxdata/telegraf) and the Mqtt message broker, bar stats are viewable in real time with Grafana.
 
 ![Grafana is awesome](https://github.com/bgulla/boozer/blob/master/dashboard/bar-dashboard.png?raw=true)
 
