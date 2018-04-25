@@ -1,3 +1,6 @@
+[Database]
+filepath: ../db/db.sqlite
+
 [Taps]
 tap1_gpio_pin: 24
 tap2_gpio_pin: 26 
@@ -26,3 +29,4 @@ enabled: True
 enabled: True
 broker: localhost
 port: 1883
+
