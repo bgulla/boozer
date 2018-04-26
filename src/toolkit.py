@@ -2,6 +2,7 @@ import beer_db
 import argparse
 import argparse
 import ConfigParser
+import requests
 
 """
 
@@ -29,12 +30,35 @@ DB_FILEPATH="../db/db.sqlite"
 
 def display_config():
     print "Loaded config..."
-    print "  Database file: ", DB_FILEPATH
+    print "\tDatabase file:\t", DB_FILEPATH
+    print "\tTemperature Endpoint:\t", config.get("Temperature", "endpoint")
     print "----------------------------------------------------"
 
-#TODO
-def display_temperature(host):
-    print "todo"
+def print_temperature():
+    """
+
+    :return:
+    """
+    t = get_temperature()
+    print "\t Temperature: %s" % t
+    return
+
+def get_temperature():
+    """
+
+    :return:
+    """
+    try:
+        temperature_url = config.get("Temperature", "endpoint")
+        if not temperature_url:
+            return "No Temperature endpoint provided"
+        r = requests.get(temperature_url)
+        if r.status_code == 200:
+            return r.text
+        else:
+            return "error_http"
+    except:
+        return "error"
 
 def yes_or_no(question):
     """
@@ -88,6 +112,9 @@ def main():
     # TODO print out all the tap volume amounts
     if results.printval:
         print_taps()
+
+    if results.temp:
+        print_temperature()
 
     # TODO calibrate flow per pint
 
