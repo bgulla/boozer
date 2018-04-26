@@ -13,10 +13,10 @@ import requests
 parser = argparse.ArgumentParser(description='Example with long option names')
 parser.add_argument('--reset-tap', '-t', action="store", help='Reset the database value for a tap', dest="reset_tap_id")
 parser.add_argument('--printval', '-p',  action='store_true', help='print all tap volumes')
-parser.add_argument('--temp', '-p',  action='store_true', help='print the temperature values')
+parser.add_argument('--temp',  action='store_true', help='print the temperature values')
 
 # Read in config
-CONFIG_FILE = "./config.ini"
+CONFIG_FILE = "../config/config.ini"
 config = ConfigParser.ConfigParser()
 config.read(CONFIG_FILE)
 
