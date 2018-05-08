@@ -41,9 +41,9 @@ tap1_gpio_pin: 24
 tap2_gpio_pin: 26 
 tap3_gpio_pin: 12 
 tap4_gpio_pin: 13
-tap1_beer_name: Bud Light
-tap2_beer_name: Water
-tap3_beer_name: disabled
+tap1_beer_name: American IPA
+tap2_beer_name: Irish Red Ale
+tap3_beer_name: Seltzer Water
 tap4_beer_name: disabled
 
 [Temperature]
