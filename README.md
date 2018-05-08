@@ -7,7 +7,7 @@ Kegerator monitoring/volume tracking tool writting in Python.
  * [Twitter](https://twitter.com/ibuiltabar) functionality. Sharing is caring.
  * Temperature Monitoring. [via sensors2json microservice](https://github.com/bgulla/sensor2json)
  
-[Photo Gallery](https://imgur.com/a/7jnrc)
+[Bar-Build Photo Gallery](https://imgur.com/a/7jnrc)
 
 ## Hardware
 The following hardware was used in the inital build of boozer but not necessarily required.
