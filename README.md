@@ -9,6 +9,8 @@ Kegerator monitoring/volume tracking tool writting in Python.
  
 [Bar-Build Photo Gallery](https://imgur.com/a/7jnrc)
 
+![Pouring in motion](https://github.com/bgulla/boozer/blob/master/img/pour.gif?raw=true)
+
 ## Hardware
 The following hardware was used in the inital build of boozer but not necessarily required.
  * [Raspberry Pi 3+](https://www.adafruit.com/product/3055)
