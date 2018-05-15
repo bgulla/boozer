@@ -10,6 +10,7 @@ import scrollphat
 from flowmeter import *
 import beer_db
 import twitter_notify
+import slack_post
 import requests
 import ConfigParser
 import logging
@@ -27,6 +28,7 @@ db = beer_db.BeerDB("./db.sqlite")  # TODO: replace this with configuration valu
 MQTT_ENABLED = False
 TWITTER_ENABLED = False
 SCROLLPHAT_ENABLED = False
+SLACK_ENABLED = False
 
 if config.get("Scrollphat", 'enabled') == "True":
     scrollphat.set_brightness(7)
@@ -45,9 +47,15 @@ if config.getboolean("Twitter", "enabled"):
     TWITTER_ENABLED = True
     twitter = twitter_notify.TwitterNotify(config)
 
+# setup mqtt client
 if config.getboolean("Mqtt", "enabled"):
     MQTT_ENABLED = True
     mqtt_client = bar_mqtt.BoozerMqtt(config.get("Mqtt", "broker"))
+
+# setup slack client
+if config.getboolean("Slack", "enabled"):
+    SLACK_ENABLED = True
+    slack = slack_notify.SlackNotify(config)
 
 # set up the flow meters
 taps = []  # TODO, make this dynamic by reading teh configuration files
@@ -142,6 +150,8 @@ while True:
                 logger.debug(
                     "Tap: %s\t Poursize: %s vs %s" % (str(tap.get_tap_id()), str(pour_size), str(tap.previous_pour)))
                 scrollphat.set_brightness(7)
+                if pour_size2 < 0.05:
+                    continue
                 scrollphat.write_string(str(pour_size2).replace("0.", "."))
                 tap.set_previous_pour(pour_size)
                 scrollphat_cleared = False
@@ -163,6 +173,17 @@ while True:
                                    volume_remaining,
                                    get_temperature())  # TODO make temperature optional
                 if SCROLLPHAT_ENABLED : scroll_once(msg)
+
+
+            if SLACK_ENABLED:
+                # calculate how much beer is left in the keg
+                volume_remaining = str(round(db.get_percentage(tap.get_tap_id()), 3) * 100)
+                # tweet of the record
+                msg = slack.slack_pour(tap.get_tap_id(),
+                                   tap.getFormattedThisPour(),
+                                   tap.getBeverage(),
+                                   volume_remaining,
+                                   get_temperature())  # TODO make temperature optional
 
             # reset the counter
             tap.thisPour = 0.0

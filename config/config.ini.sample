@@ -7,13 +7,17 @@ tap2_gpio_pin: 26
 tap3_gpio_pin: 12 
 tap4_gpio_pin: 13
 tap1_beer_name: Bud Light
-tap2_beer_name: Water
-tap3_beer_name: disabled
+tap2_beer_name: Seltzer Water
+tap3_beer_name: Sweet Baby Jesus
 tap4_beer_name: disabled
 
 [Temperature]
 enabled: True
 endpoint: http://localhost:8888/chillerf
+
+[Slack]
+enabled: True
+webhookurl: https://hooks.slack.com/services/xxx/xxx/xxx
 
 [Twitter]
 enabled: False

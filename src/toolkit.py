@@ -3,6 +3,7 @@ import argparse
 import argparse
 import ConfigParser
 import requests
+import slack_notify
 
 """
 
@@ -31,7 +32,7 @@ DB_FILEPATH="../db/db.sqlite"
 def display_config():
     print "Loaded config..."
     print "\tDatabase file:\t", DB_FILEPATH
-    print "\tTemperature Endpoint:\t", config.get("Temperature", "endpoint")
+#    print "\tTemperature Endpoint:\t", config.get("Temperature", "endpoint")
     print "----------------------------------------------------"
 
 def print_temperature():

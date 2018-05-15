@@ -18,6 +18,7 @@ COPY ./src/beer_db.py /boozer/
 COPY ./db.sqlite /boozer/
 COPY ./src/flowmeter.py /boozer/
 COPY ./src/twitter_notify.py /boozer/
+COPY ./src/slack_notify.py /boozer/
 COPY ./src/bar_mqtt.py /boozer/
 COPY ./src/boozer.py /boozer/
 COPY ./src/toolkit.py /boozer/
