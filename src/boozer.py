@@ -10,7 +10,7 @@ import scrollphat
 from flowmeter import *
 import beer_db
 import twitter_notify
-import slack_post
+import slack_notify
 import requests
 import ConfigParser
 import logging
@@ -41,6 +41,7 @@ formatter = logging.Formatter(
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 # setup twitter client
 if config.getboolean("Twitter", "enabled"):

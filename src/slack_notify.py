@@ -1,5 +1,11 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*
 import json
 import requests
+import ConfigParser
+
+# Static vars
+DEGREES="°"
 
 class SlackNotify():
     def __init__(self, config_obj):
@@ -49,3 +55,11 @@ class SlackNotify():
             )
         return
 
+
+
+if __name__ == "__main__":
+  CONFIG_FILE = "./config/config.ini"
+  config = ConfigParser.ConfigParser()
+  config.read(CONFIG_FILE)
+  s = SlackNotify(config)
+  s.post_slack("test message sent from slack_notify.py")

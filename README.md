@@ -4,12 +4,17 @@
 ## Features
 Kegerator monitoring/volume tracking tool writting in Python. 
  * Track the remaining beer volume of your kegs! Flow sensors keep a running log of your remaining beer volume, using SQLITE.
- * [Twitter](https://twitter.com/ibuiltabar) functionality. Sharing is caring.
+ * Slack & [Twitter](https://twitter.com/ibuiltabar) functionality. Sharing is caring.
  * Temperature Monitoring. [via sensors2json microservice](https://github.com/bgulla/sensor2json)
- 
-[Bar-Build Photo Gallery](https://imgur.com/a/7jnrc)
 
 ![Pouring in motion](https://github.com/bgulla/boozer/blob/master/img/pour.gif?raw=true)
+
+## Supported Notification Platforms
+Boozer can tweet out whenever a new pour event is detected. The following notification platforms are supported:
+* Slack (webhook)
+![Slack](https://github.com/bgulla/boozer/blob/master/img/slack.png?raw=true)
+* Twitter (oauth)
+
 
 ## Hardware
 The following hardware was used in the inital build of boozer but not necessarily required.
@@ -19,7 +24,7 @@ The following hardware was used in the inital build of boozer but not necessaril
  * [ScrollPhat LED Display](https://shop.pimoroni.com/products/scroll-phat)
  * [DS18b20 Waterproof Temperature Sensor](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-11-ds18b20-temperature-sensing/hardware)
  
- ![Home Assistant](https://github.com/bgulla/boozer/blob/master/img/breadboard.jpg?raw=true)
+ ![Breadboard](https://github.com/bgulla/boozer/blob/master/img/breadboard.jpg?raw=true)
  
 
 ## Running in Docker
@@ -32,9 +37,6 @@ docker run --rm  -d --name="boozer" \
     -v <db.sqlite>:/boozer/db.sqlite \
     -t bgulla/boozer
 ```
-
-## Twitter Alerts
-After creating a development application form at [https://apps.twitter.com/](https://apps.twitter.com), Boozer can tweet out whenever a new pour event is detected. See example at [ibuiltabar](https://twitter.com/ibuiltabar).
 
 ## Configuration Sample
 ```
@@ -76,3 +78,6 @@ With a little help from [Telegraf](https://github.com/influxdata/telegraf) and t
 # Home Assistant
 Home Assistant is a great tool to pull together all of your home's smart IOT devices into an easy to use, secure tool. Since Boozer can speak mqtt, it can be easily integrated into [Home Assistant](https://home-assistant.io).
 ![Home Assistant](https://github.com/bgulla/boozer/blob/master/img/hass.png?raw=true)
+
+## Build Pictures
+Photos of the bar making process are available [here](https://imgur.com/a/7jnrc).
