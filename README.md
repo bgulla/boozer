@@ -13,7 +13,7 @@ Boozer can tweet out whenever a new pour event is detected. The following notifi
 * Slack (webhook)
 ![Slack](https://github.com/bgulla/boozer/blob/master/img/slack.png?raw=true)
 * Twitter (oauth)
-
+* Untappd Auto-Posting. (I broke this, hoping to fix it soon)
 
 ## Hardware
 The following hardware was used in the inital build of boozer but not necessarily required.
