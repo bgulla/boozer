@@ -50,6 +50,10 @@ tap2_beer_name: Irish Red Ale
 tap3_beer_name: Seltzer Water
 tap4_beer_name: disabled
 
+[Slack]
+enabled: True
+webhookurl: https://hooks.slack.com/services/xxx/xxx/xxx
+
 [Temperature]
 enabled: True
 endpoint: http://localhost:8888/chillerf
