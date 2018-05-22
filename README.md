@@ -7,7 +7,6 @@ Kegerator monitoring/volume tracking tool writting in Python.
  * Slack & [Twitter](https://twitter.com/ibuiltabar) functionality. Sharing is caring.
  * Temperature Monitoring. [via sensors2json microservice](https://github.com/bgulla/sensor2json)
 
-![Pouring in motion](https://github.com/bgulla/boozer/blob/master/img/pour.gif?raw=true)
 
 ## Supported Notification Platforms
 Boozer can tweet out whenever a new pour event is detected. The following notification platforms are supported:
@@ -23,8 +22,9 @@ The following hardware was used in the inital build of boozer but not necessaril
    * [1/2 to 1/4 Adapter (x8)](https://www.amazon.com/gp/product/B00AB5X28G)
  * [ScrollPhat LED Display](https://shop.pimoroni.com/products/scroll-phat)
  * [DS18b20 Waterproof Temperature Sensor](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-11-ds18b20-temperature-sensing/hardware)
- 
- ![Breadboard](https://github.com/bgulla/boozer/blob/master/img/breadboard.jpg?raw=true)
+
+![Pouring in motion](https://github.com/bgulla/boozer/blob/master/img/pour.gif?raw=true) 
+![Breadboard](https://github.com/bgulla/boozer/blob/master/img/breadboard.jpg?raw=true)
  
 
 ## Running in Docker
