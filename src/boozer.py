@@ -29,6 +29,7 @@ MQTT_ENABLED = False
 TWITTER_ENABLED = False
 SCROLLPHAT_ENABLED = False
 SLACK_ENABLED = False
+TEMPERATURE_ENABLED = False
 
 if config.get("Scrollphat", 'enabled') == "True":
     scrollphat.set_brightness(7)
@@ -53,6 +54,13 @@ if config.getboolean("Mqtt", "enabled"):
     MQTT_ENABLED = True
     mqtt_client = bar_mqtt.BoozerMqtt(config.get("Mqtt", "broker"))
 
+# setup temperaturesensor client
+if config.getboolean("Temperature", "enabled"):
+    TEMPERATURE_ENABLED = True
+    temperature_url = config.get("Temperature", "endpoint")
+
+
+
 # setup slack client
 if config.getboolean("Slack", "enabled"):
     SLACK_ENABLED = True
@@ -72,7 +80,6 @@ tap4 = FlowMeter("not metric", [config.get("Taps", "tap4_beer_name")], tap_id=4,
 taps = {tap1, tap2, tap3, tap4}
 
 # More config
-temperature_url = config.get("Temperature", "endpoint")
 
 
 def get_temperature():
@@ -82,6 +89,9 @@ def get_temperature():
 
     :return: string
     """
+    global TEMPERATURE_ENABLED
+    if not TEMPERATURE_ENABLED:
+      return "disabled"
     global temperature_url
     try:
         r = requests.get(temperature_url)
@@ -134,7 +144,8 @@ for tap in taps:  # setup all the taps. add event triggers to the opening of the
     if MQTT_ENABLED: update_mqtt(tap.get_tap_id()) # do a prelim mqtt update in case it's been awhile
 
 # Initial info
-logger.info("Temperature: " + get_temperature())
+if TEMPERATURE_ENABLED:
+    logger.info("Temperature: " + get_temperature())
 logger.info("Boozer Intialized! Waiting for pours. Drink up, be merry!")
 
 while True:
