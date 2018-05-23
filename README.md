@@ -17,11 +17,11 @@ Boozer can tweet out whenever a new pour event is detected. The following notifi
 
 ## Hardware
 The following hardware was used in the inital build of boozer but not necessarily required.
- * [Raspberry Pi 3+](https://www.adafruit.com/product/3055)
+ * [Raspberry Pi](https://www.adafruit.com/product/3055)
  * [Flow Sensors (x4)](https://www.adafruit.com/product/828)
    * [1/2 to 1/4 Adapter (x8)](https://www.amazon.com/gp/product/B00AB5X28G)
- * [ScrollPhat LED Display](https://shop.pimoroni.com/products/scroll-phat)
- * [DS18b20 Waterproof Temperature Sensor](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-11-ds18b20-temperature-sensing/hardware)
+ * [ScrollPhat LED Display](https://shop.pimoroni.com/products/scroll-phat) (Optional)
+ * [DS18b20 Waterproof Temperature Sensor](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-11-ds18b20-temperature-sensing/hardware) (Optional)
 
 ![Pouring in motion](https://github.com/bgulla/boozer/blob/master/img/pour.gif?raw=true) 
 ![Breadboard](https://github.com/bgulla/boozer/blob/master/img/breadboard.jpg?raw=true)
@@ -85,3 +85,6 @@ Home Assistant is a great tool to pull together all of your home's smart IOT dev
 
 ## Build Pictures
 Photos of the bar making process are available [here](https://imgur.com/a/7jnrc).
+
+## Updates
+* 5-22-2018: Temperature sensors are now optional.
