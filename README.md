@@ -1,5 +1,7 @@
 # boozer - Kegerator Monitoring Toolkit 
 
+[Boozer was recently featured in Hackaday](https://hackaday.com/2018/05/28/boozer-tells-the-internet-how-much-you-drink-if-you-want-it-to/)
+
 ![The Bar That Started It All](https://github.com/bgulla/boozer/blob/master/img/bar.jpg?raw=true)
 ## Features
 Kegerator monitoring/volume tracking tool writting in Python. 
