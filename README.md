@@ -4,7 +4,7 @@
 
 ![The Bar That Started It All](https://github.com/bgulla/boozer/blob/master/img/bar.jpg?raw=true)
 
-[Boozer was recently featured in Hackaday](https://hackaday.com/2018/05/28/boozer-tells-the-internet-how-much-you-drink-if-you-want-it-to/)
+[Boozer was recently featured in Hackaday!!!](https://hackaday.com/2018/05/28/boozer-tells-the-internet-how-much-you-drink-if-you-want-it-to/)
 
 
 ## Features
@@ -91,6 +91,9 @@ Home Assistant is a great tool to pull together all of your home's smart IOT dev
 
 ## Build Pictures
 Photos of the bar making process are available [here](https://imgur.com/a/7jnrc).
+
+## FAQs
+Most of your questions can probably be answered in the [reddit post](https://www.reddit.com/r/Homebrewing/comments/8lc1wp/introducing_boozer_raspberrypi_controlled/) or the [Hackaday feature](https://hackaday.com/2018/05/28/boozer-tells-the-internet-how-much-you-drink-if-you-want-it-to/).
 
 ## Updates
 * 5-22-2018: Temperature sensors are now optional.
