@@ -5,7 +5,8 @@ import ConfigParser
 import requests
 import slack_notify
 import bar_mqtt
-
+import os
+import sys
 """
 
 """
@@ -18,18 +19,42 @@ parser.add_argument('--printval', '-p',  action='store_true', help='print all ta
 parser.add_argument('--temp',  action='store_true', help='print the temperature values')
 parser.add_argument('--mqtt', '-m',   action='store_true', help='update the tap values in mqtt broker')
 
-# Read in config
+
+
+# TODO add ability to pass in the location of the database to edit
+
+DB_FILEPATH="../db/db.sqlite"
 CONFIG_FILE = "../config/config.ini"
+
+
+
+
+if os.path.isfile(DB_FILEPATH):
+  print ""
+else:
+  if os.path.isfile("/boozer/db.sqlite"):
+    DB_FILEPATH = "/boozer/db.sqlite"
+  else:
+    print "[fatal] cannot load db from default nor /boozer/db.sqlite."
+    sys.exit(1)
+# Test for conifg file
+if os.path.isfile(CONFIG_FILE):
+  print ""
+else:
+  if os.path.isfile("/boozer/config.ini"):
+    CONFIG_FILE = "/boozer/config.ini"
+  else:
+    print "[fatal] cannot load config from default nor /boozer/config.ini."
+    sys.exit(1)
+
+
+# Read in config
 config = ConfigParser.ConfigParser()
 config.read(CONFIG_FILE)
 
 
 results = parser.parse_args()
 
-
-# TODO add ability to pass in the location of the database to edit
-
-DB_FILEPATH="../db/db.sqlite"
 
 def display_config():
     print "Loaded config..."
