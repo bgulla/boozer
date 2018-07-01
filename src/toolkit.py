@@ -4,6 +4,7 @@ import argparse
 import ConfigParser
 import requests
 import slack_notify
+import bar_mqtt
 
 """
 
@@ -15,6 +16,7 @@ parser = argparse.ArgumentParser(description='Example with long option names')
 parser.add_argument('--reset-tap', '-t', action="store", help='Reset the database value for a tap', dest="reset_tap_id")
 parser.add_argument('--printval', '-p',  action='store_true', help='print all tap volumes')
 parser.add_argument('--temp',  action='store_true', help='print the temperature values')
+parser.add_argument('--mqtt', '-m',   action='store_true', help='update the tap values in mqtt broker')
 
 # Read in config
 CONFIG_FILE = "../config/config.ini"
@@ -50,6 +52,8 @@ def get_temperature():
     :return:
     """
     try:
+        if not config.get_boolean("Temperature", "enabled"):
+            return "disabled"
         temperature_url = config.get("Temperature", "endpoint")
         if not temperature_url:
             return "No Temperature endpoint provided"
@@ -72,6 +76,16 @@ def yes_or_no(question):
             return True
         if reply[0] == 'n':
             return False
+
+def update_mqtt():
+    NUM_TAPS = 4
+    for tap_id in range(1,(NUM_TAPS+1)):
+        db = beer_db.BeerDB(db_filepath=DB_FILEPATH)
+        mqtt_client = bar_mqtt.BoozerMqtt(config.get("Mqtt", "broker"))
+        percent = db.get_percentage100(tap_id)
+        topic = "bar/tap%s" % str(tap_id)
+        mqtt_client.pub_mqtt(topic, str(percent))
+        print "[MQTT] updated tap %i" % tap_id
 
 def print_taps():
     """
@@ -116,6 +130,9 @@ def main():
 
     if results.temp:
         print_temperature()
+
+    if results.mqtt:
+        update_mqtt()
 
     # TODO calibrate flow per pint
 
