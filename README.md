@@ -74,6 +74,63 @@ broker: localhost
 port: 1883
 ```
 
+## Toolkit
+```bash
+🍺  pi@bar[/opt/boozer] >docker exec -ti boozer python /boozer/toolkit.py -h
+usage: toolkit.py [-h] [--reset-tap RESET_TAP_ID] [--printval] [--temp]
+                  [--mqtt]
+
+Example with long option names
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --reset-tap RESET_TAP_ID, -t RESET_TAP_ID
+                        Reset the database value for a tap
+  --printval, -p        print all tap volumes
+  --temp                print the temperature values
+  --mqtt, -m            update the tap values in mqtt broker
+```
+
+### Print Remaining Keg Volumes
+```bash
+🍺  pi@bar[/opt/boozer] > docker exec -it boozer python /boozer/toolkit.py --printval
+Loaded config...
+        Database file:  /boozer/db.sqlite
+----------------------------------------------------
+        Tap 1 | 100.0 remaining
+        Tap 2 | 100.0 remaining
+        Tap 3 | 100.0 remaining
+        Tap 4 | 100.0 remaining
+```
+
+### Force-Update MQTT Broker
+```bash
+🍺  pi@bar[/opt/boozer] > docker exec -it boozer python /boozer/toolkit.py --mqtt
+Loaded config...
+        Database file:  /boozer/db.sqlite
+----------------------------------------------------
+[MQTT] updated tap 1
+[MQTT] updated tap 2
+[MQTT] updated tap 3
+[MQTT] updated tap 4
+```
+
+### Reseting Taps
+```bash
+🍺  pi@bar[/opt/boozer] >docker exec -ti boozer python /boozer/toolkit.py --reset-tap 1
+Loaded config...
+	Database file:	/boozer/db.sqlite
+----------------------------------------------------
+current [Tap 1 ] 0.00 remaining
+Are you sure that you reset tapid: 1 (y/n): y
+Record: Tap 1 Volume 0
+Reset Tap  1
+updated! [Tap 1 ] 1.0 remaining
+```
+
+
+
+
 ## Grafana Integration
 With a little help from [Telegraf](https://github.com/influxdata/telegraf) and the Mqtt message broker, bar stats are viewable in real time with Grafana.
 

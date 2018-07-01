@@ -127,7 +127,7 @@ def reset_tap(tap_id):
     :param tap_id:
     :return:
     """
-    db = beer_db.BeerDB(db_filepath="../db/db.sqlite")
+    db = beer_db.BeerDB(db_filepath=DB_FILEPATH)
     print "current [Tap %s ] %s remaining" % (str(tap_id), str(db.get_percentage(tap_id)))
     msg = "Are you sure that you reset tapid: " + str(tap_id)
     if yes_or_no(msg):
