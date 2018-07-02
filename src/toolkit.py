@@ -7,6 +7,7 @@ import slack_notify
 import bar_mqtt
 import os
 import sys
+import time
 """
 
 """
@@ -18,6 +19,7 @@ parser.add_argument('--reset-tap', '-t', action="store", help='Reset the databas
 parser.add_argument('--printval', '-p',  action='store_true', help='print all tap volumes')
 parser.add_argument('--temp',  action='store_true', help='print the temperature values')
 parser.add_argument('--mqtt', '-m',   action='store_true', help='update the tap values in mqtt broker')
+parser.add_argument('--scrollphat', '-s',   action='store_true', help='Test the functionality of the SCROLLPHAT display.')
 
 
 
@@ -137,8 +139,20 @@ def reset_tap(tap_id):
     else:
         print "bailing"
 
+def test_scrollphat():
+    import scrollphat
+    scrollphat.set_brightness(2)
 
+    scrollphat.write_string("BOOZER", 11)
+    length = scrollphat.buffer_len()
 
+    for i in range(length):
+        try:
+            scrollphat.scroll()
+            time.sleep(0.1)
+        except KeyboardInterrupt:
+            scrollphat.clear()
+            sys.exit(-1)
 
 def main():
 
@@ -158,6 +172,9 @@ def main():
 
     if results.mqtt:
         update_mqtt()
+
+    if results.scrollphat:
+        test_scrollphat()
 
     # TODO calibrate flow per pint
 

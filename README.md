@@ -95,6 +95,7 @@ optional arguments:
   --printval, -p        print all tap volumes
   --temp                print the temperature values
   --mqtt, -m            update the tap values in mqtt broker
+  --scrollphat, -s      Test the functionality of the SCROLLPHAT display.
 ```
 
 ### Print Remaining Keg Volumes
