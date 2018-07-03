@@ -154,6 +154,12 @@ Photos of the bar making process are available [here](https://imgur.com/a/7jnrc)
 ## FAQs
 Most of your questions can probably be answered in the [reddit post](https://www.reddit.com/r/Homebrewing/comments/8lc1wp/introducing_boozer_raspberrypi_controlled/) or the [Hackaday feature](https://hackaday.com/2018/05/28/boozer-tells-the-internet-how-much-you-drink-if-you-want-it-to/).
 
+## Press:
+* [Hackaday](https://hackaday.com/2018/05/28/boozer-tells-the-internet-how-much-you-drink-if-you-want-it-to/)
+* [Hackster](https://blog.hackster.io/boozer-is-an-open-source-kegerator-monitor-you-can-now-build-with-a-raspberry-pi-5c086e4dfcd4)
+* [Adafruit](https://blog.adafruit.com/2018/05/18/raspberry-pi-kegerator-piday-raspberrypi-raspberry_pi/)
+* [RaspberryPi.org](https://www.raspberrypi.org/weekly/scouts/)
+
 ## Updates
 * 5-22-2018: Temperature sensors are now optional.
 * 7-1-2018: Toolkit functionality finally documented. Reset tap db values and more. 
