@@ -1,10 +1,11 @@
 # boozer - Kegerator Monitoring Toolkit 
 
+[![Build Status](https://travis-ci.org/bgulla/boozer.svg?branch=master)](https://travis-ci.org/bgulla/boozer)
 
 
 ![The Bar That Started It All](https://github.com/bgulla/boozer/blob/master/img/bar.jpg?raw=true)
 
-[Boozer was recently featured in Hackaday!!!](https://hackaday.com/2018/05/28/boozer-tells-the-internet-how-much-you-drink-if-you-want-it-to/)
+[Boozer was recently featured in Hackaday](https://hackaday.com/2018/05/28/boozer-tells-the-internet-how-much-you-drink-if-you-want-it-to/)
 
 
 ## Features
