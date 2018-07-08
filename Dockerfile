@@ -15,7 +15,7 @@ ENV APP_HOME=/boozer
 COPY ./src/requirements.txt /boozer/
 RUN pip install -r /boozer/requirements.txt
 COPY ./src/beer_db.py /boozer/
-COPY ./db.sqlite /boozer/
+COPY ./db/db.sqlite /boozer/
 COPY ./src/flowmeter.py /boozer/
 COPY ./src/twitter_notify.py /boozer/
 COPY ./src/slack_notify.py /boozer/
