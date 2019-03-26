@@ -103,13 +103,12 @@ def get_enabled_string(val):
     else:
         return "disabled"
 
-def print_config(config):  ## WHY AM I PRINTING? TODO switch to log.info()
-    print "BOOZER IS UP. LET'S FUCKING DO THIS"
+def print_config():
     print "==================================="
-    print "Twitter: ", get_enabled_string(TWITTER_ENABLED)
-    print "MQTT: ", get_enabled_string(MQTT_ENABLED)
-    print "Temperature: ", get_enabled_string(TEMPERATURE_ENABLED)
-    print "Slack: ", get_enabled_string(SLACK_ENABLED)
+    print "Twitter:\t\t", get_enabled_string(TWITTER_ENABLED)
+    print "MQTT:\t\t", get_enabled_string(MQTT_ENABLED)
+    print "Temperature:\t\t", get_enabled_string(TEMPERATURE_ENABLED)
+    print "Slack:\t\t", get_enabled_string(SLACK_ENABLED)
     print "==================================="
 
 
@@ -197,72 +196,95 @@ if TEMPERATURE_ENABLED:
 print_config(config)
 logger.info("Boozer Intialized! Waiting for pours. Drink up, be merry!")
 
-while True:
+def main():
+    while True:
 
-    # Handle keyboard events
-    currentTime = int(time.time() * FlowMeter.MS_IN_A_SECOND)
+        # Handle keyboard events
+        currentTime = int(time.time() * FlowMeter.MS_IN_A_SECOND)
 
-    for tap in taps:
-        if tap.thisPour > 0.0:
-            pour_size = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER, 3)
-            pour_size2 = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER,
-                               2)  # IDK what is going on here but it works and I am afraid to break it
-            if pour_size != tap.previous_pour:
-                logger.debug(
-                    "Tap: %s\t Poursize: %s vs %s" % (str(tap.get_tap_id()), str(pour_size), str(tap.previous_pour)))
-#                scrollphat.set_brightness(7)
-                if pour_size2 < 0.05:
-                    continue
-                scroll_once(str(pour_size2).replace("0.", "."))
+        for tap in taps:
+            if tap.thisPour > 0.0:
+                pour_size = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER, 3)
+                pour_size2 = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER,
+                                   2)  # IDK what is going on here but it works and I am afraid to break it
+                if pour_size != tap.previous_pour:
+                    logger.debug(
+                        "Tap: %s\t Poursize: %s vs %s" % (str(tap.get_tap_id()), str(pour_size), str(tap.previous_pour)))
+    #                scrollphat.set_brightness(7)
+                    if pour_size2 < 0.05:
+                        continue
+                    scroll_once(str(pour_size2).replace("0.", "."))
 
-#                scrollphat.write_string(str(pour_size2).replace("0.", "."))
-                tap.set_previous_pour(pour_size)
-                scrollphat_cleared = False
+    #                scrollphat.write_string(str(pour_size2).replace("0.", "."))
+                    tap.set_previous_pour(pour_size)
+                    scrollphat_cleared = False
 
-        if (tap.thisPour > 0.23 and currentTime - tap.lastClick > 10000):  # 10 seconds of inactivity causes a tweet
+            if (tap.thisPour > 0.23 and currentTime - tap.lastClick > 10000):  # 10 seconds of inactivity causes a tweet
 
-            pour_size = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER, 3)
-            # receord that pour into the database
-            db.update_tap(tap.tap_id, pour_size) # record the pour in the db
+                pour_size = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER, 3)
+                # receord that pour into the database
+                db.update_tap(tap.tap_id, pour_size) # record the pour in the db
 
-            # is twitter enabled?
-            if TWITTER_ENABLED:
-                # calculate how much beer is left in the keg
-                volume_remaining = str(round(db.get_percentage(tap.get_tap_id()), 3) * 100)
-                # tweet of the record
-                msg = twitter.tweet_pour(tap.get_tap_id(),
-                                   tap.getFormattedThisPour(),
-                                   tap.getBeverage(),
-                                   volume_remaining,
-                                   get_temperature())  # TODO make temperature optional
-                if SCROLLPHAT_ENABLED : scroll_once(msg)
+                # is twitter enabled?
+                if TWITTER_ENABLED:
+                    # calculate how much beer is left in the keg
+                    volume_remaining = str(round(db.get_percentage(tap.get_tap_id()), 3) * 100)
+                    # tweet of the record
+                    msg = twitter.tweet_pour(tap.get_tap_id(),
+                                       tap.getFormattedThisPour(),
+                                       tap.getBeverage(),
+                                       volume_remaining,
+                                       get_temperature())  # TODO make temperature optional
+                    if SCROLLPHAT_ENABLED : scroll_once(msg)
 
 
-            if SLACK_ENABLED:
-                # calculate how much beer is left in the keg
-                volume_remaining = str(round(db.get_percentage(tap.get_tap_id()), 3) * 100)
-                # tweet of the record
-                msg = slack.slack_pour(tap.get_tap_id(),
-                                   tap.getFormattedThisPour(),
-                                   tap.getBeverage(),
-                                   volume_remaining,
-                                   get_temperature())  # TODO make temperature optional
+                if SLACK_ENABLED:
+                    # calculate how much beer is left in the keg
+                    volume_remaining = str(round(db.get_percentage(tap.get_tap_id()), 3) * 100)
+                    # tweet of the record
+                    msg = slack.slack_pour(tap.get_tap_id(),
+                                       tap.getFormattedThisPour(),
+                                       tap.getBeverage(),
+                                       volume_remaining,
+                                       get_temperature())  # TODO make temperature optional
 
-            # reset the counter
-            tap.thisPour = 0.0
+                # reset the counter
+                tap.thisPour = 0.0
 
-            # clear the display
-#            scrollphat.clear()
-#            scrollphat_cleared = True
+                # clear the display
+    #            scrollphat.clear()
+    #            scrollphat_cleared = True
 
-            # publish the updated value to mqtt broker
-            if config.getboolean("Mqtt", "enabled"): update_mqtt(tap.get_tap_id())
+                # publish the updated value to mqtt broker
+                if config.getboolean("Mqtt", "enabled"): update_mqtt(tap.get_tap_id())
 
-        # display the pour in real time for debugging
-        if tap.thisPour > 0.05: logger.debug("[POUR EVENT] " + str(tap.get_tap_id()) + ":" + str(tap.thisPour))
+            # display the pour in real time for debugging
+            if tap.thisPour > 0.05: logger.debug("[POUR EVENT] " + str(tap.get_tap_id()) + ":" + str(tap.thisPour))
 
-        # reset flow meter after each pour (2 secs of inactivity)
-        if (tap.thisPour <= 0.23 and currentTime - tap.lastClick > 2000): tap.thisPour = 0.0
+            # reset flow meter after each pour (2 secs of inactivity)
+            if (tap.thisPour <= 0.23 and currentTime - tap.lastClick > 2000): tap.thisPour = 0.0
 
-    # go night night
-    time.sleep(0.01)
+        # go night night
+        time.sleep(0.01)
+
+def print_ascii_beer():
+    beer = """
+      .   *   ..  . *  *
+*  * @()Ooc()*   o  .
+    (Q@*0CG*O()  ___
+   |\_________/|/ _ \
+   |  |  |  |  | / | |
+   |  |  |  |  | | | |
+   |  |  |  |  | | | |
+   |  |  |  |  | | | |
+   |  |  |  |  | | | |
+   |  |  |  |  | \_| |
+   |  |  |  |  |\___/
+   |\_|__|__|_/|
+    \_________/
+    """
+    print beer
+
+if __name__ == "__main__":
+    print_ascii_beer()
+    main()
