@@ -5,7 +5,7 @@ import os
 import time
 import math
 import logging
-import scrollphat
+#import scrollphat
 # import RPi.GPIO as GPIO
 from flowmeter import *
 import beer_db
@@ -15,6 +15,18 @@ import requests
 import ConfigParser
 import logging
 import bar_mqtt
+
+####
+
+from luma.core.interface.serial import i2c
+from luma.core.render import canvas
+from luma.oled.device import ssd1306, ssd1325, ssd1331, sh1106
+import time
+
+
+####
+
+
 
 scrollphat_cleared = True
 
@@ -31,8 +43,8 @@ SCROLLPHAT_ENABLED = False
 SLACK_ENABLED = False
 TEMPERATURE_ENABLED = False
 
-if config.get("Scrollphat", 'enabled') == "True":
-    scrollphat.set_brightness(7)
+#if config.get("Scrollphat", 'enabled') == "True":
+#    scrollphat.set_brightness(7)
 
 # Set the logger
 logger = logging.getLogger()
@@ -43,6 +55,10 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.DEBUG)
 logger.setLevel(logging.INFO)
+
+
+import os 
+current_path = os.path.dirname(os.path.realpath(__file__))
 
 # setup twitter client
 if config.getboolean("Twitter", "enabled"):
@@ -81,6 +97,21 @@ taps = {tap1, tap2, tap3, tap4}
 
 # More config
 
+def get_enabled_string(val):
+    if val == True:
+        return "enabled"
+    else:
+        return "disabled"
+
+def print_config(config):  ## WHY AM I PRINTING? TODO switch to log.info()
+    print "BOOZER IS UP. LET'S FUCKING DO THIS"
+    print "==================================="
+    print "Twitter: ", get_enabled_string(TWITTER_ENABLED)
+    print "MQTT: ", get_enabled_string(MQTT_ENABLED)
+    print "Temperature: ", get_enabled_string(TEMPERATURE_ENABLED)
+    print "Slack: ", get_enabled_string(SLACK_ENABLED)
+    print "==================================="
+
 
 def get_temperature():
     """
@@ -118,6 +149,21 @@ def update_mqtt(tap_id):
     mqtt_client.pub_mqtt(topic, str(percent))
 
 def scroll_once(msg):
+    serial = i2c(port=1, address=0x3C)
+    device = ssd1306(serial, rotate=0)
+    with canvas(device) as draw:
+#    draw.rectangle(device.bounding_box, outline="white", fill="black")
+        draw.text((40, 40), msg, fill="white")
+        if True:
+            time.sleep(0.1)
+
+def display(msg):
+    if SCROLLPHAT_ENABLED:
+        scroll_once(msg)
+    else:
+        display_lcd(msg)
+
+def scroll_once2(msg):
     scrollphat.write_string(msg, 11)
     length = scrollphat.buffer_len()
 
@@ -146,6 +192,9 @@ for tap in taps:  # setup all the taps. add event triggers to the opening of the
 # Initial info
 if TEMPERATURE_ENABLED:
     logger.info("Temperature: " + get_temperature())
+
+
+print_config(config)
 logger.info("Boozer Intialized! Waiting for pours. Drink up, be merry!")
 
 while True:
@@ -161,10 +210,12 @@ while True:
             if pour_size != tap.previous_pour:
                 logger.debug(
                     "Tap: %s\t Poursize: %s vs %s" % (str(tap.get_tap_id()), str(pour_size), str(tap.previous_pour)))
-                scrollphat.set_brightness(7)
+#                scrollphat.set_brightness(7)
                 if pour_size2 < 0.05:
                     continue
-                scrollphat.write_string(str(pour_size2).replace("0.", "."))
+                scroll_once(str(pour_size2).replace("0.", "."))
+
+#                scrollphat.write_string(str(pour_size2).replace("0.", "."))
                 tap.set_previous_pour(pour_size)
                 scrollphat_cleared = False
 
@@ -201,8 +252,8 @@ while True:
             tap.thisPour = 0.0
 
             # clear the display
-            scrollphat.clear()
-            scrollphat_cleared = True
+#            scrollphat.clear()
+#            scrollphat_cleared = True
 
             # publish the updated value to mqtt broker
             if config.getboolean("Mqtt", "enabled"): update_mqtt(tap.get_tap_id())

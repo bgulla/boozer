@@ -3,3 +3,4 @@ pushbullet.py
 paho-mqtt
 #curses-menu
 scrollphat
+luma.oled
