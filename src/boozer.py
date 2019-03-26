@@ -193,10 +193,10 @@ if TEMPERATURE_ENABLED:
     logger.info("Temperature: " + get_temperature())
 
 
-print_config(config)
-logger.info("Boozer Intialized! Waiting for pours. Drink up, be merry!")
 
 def main():
+    print_config()
+    logger.info("Boozer Intialized! Waiting for pours. Drink up, be merry!")
     while True:
 
         # Handle keyboard events
