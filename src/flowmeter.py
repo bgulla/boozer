@@ -198,7 +198,7 @@ class FlowMeter():
 
         if SLACK_ENABLED and not self.STANDALONE_MODE:
             # calculate how much beer is left in the keg
-            volume_remaining = str(round(db.get_percentage(self.tap_id, 3) * 100)
+            volume_remaining = str(round(db.get_percentage(self.tap_id, 3) * 100))
             # tweet of the record
             msg = slack.slack_pour(self.tap_id,
                                 self.getFormattedThisPour(),
