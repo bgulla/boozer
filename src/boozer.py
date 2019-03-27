@@ -147,22 +147,12 @@ def update_mqtt(tap_id):
     topic = "bar/tap%s" % str(tap_id)
     mqtt_client.pub_mqtt(topic, str(percent))
 
-def scroll_once(msg):
-    serial = i2c(port=1, address=0x3C)
-    device = ssd1306(serial, rotate=0)
-    with canvas(device) as draw:
-#    draw.rectangle(device.bounding_box, outline="white", fill="black")
-        draw.text((40, 40), msg, fill="white")
-        if True:
-            time.sleep(0.1)
 
-def display(msg):
+def update_display(msg):
     if SCROLLPHAT_ENABLED:
-        scroll_once(msg)
-    else:
-        display_lcd(msg)
-
-def scroll_once2(msg):
+        update_scrollphat(msg)
+        
+def update_scrollphat(msg):
     scrollphat.write_string(msg, 11)
     length = scrollphat.buffer_len()
 
@@ -183,7 +173,7 @@ def register_tap(tap_obj):
     tap_obj.update(currentTime)
     logger.info("event-bus: registered tap " + str(tap_obj.get_tap_id()) + "successfully")
 
-
+## TODO This needs to be pulled into the init script 
 for tap in taps:  # setup all the taps. add event triggers to the opening of the taps.
     GPIO.add_event_detect(tap.get_pin(), GPIO.RISING, callback=lambda *a: register_tap(tap), bouncetime=20)
     if MQTT_ENABLED: update_mqtt(tap.get_tap_id()) # do a prelim mqtt update in case it's been awhile
@@ -201,68 +191,9 @@ def main():
 
         # Handle keyboard events
         currentTime = int(time.time() * FlowMeter.MS_IN_A_SECOND)
-
+        
         for tap in taps:
-            if tap.thisPour > 0.0:
-                pour_size = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER, 3)
-                pour_size2 = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER,
-                                   2)  # IDK what is going on here but it works and I am afraid to break it
-                if pour_size != tap.previous_pour:
-                    logger.debug(
-                        "Tap: %s\t Poursize: %s vs %s" % (str(tap.get_tap_id()), str(pour_size), str(tap.previous_pour)))
-    #                scrollphat.set_brightness(7)
-                    if pour_size2 < 0.05:
-                        continue
-                    scroll_once(str(pour_size2).replace("0.", "."))
-
-    #                scrollphat.write_string(str(pour_size2).replace("0.", "."))
-                    tap.set_previous_pour(pour_size)
-                    scrollphat_cleared = False
-
-            if (tap.thisPour > 0.23 and currentTime - tap.lastClick > 10000):  # 10 seconds of inactivity causes a tweet
-
-                pour_size = round(tap.thisPour * FlowMeter.PINTS_IN_A_LITER, 3)
-                # receord that pour into the database
-                db.update_tap(tap.tap_id, pour_size) # record the pour in the db
-
-                # is twitter enabled?
-                if TWITTER_ENABLED:
-                    # calculate how much beer is left in the keg
-                    volume_remaining = str(round(db.get_percentage(tap.get_tap_id()), 3) * 100)
-                    # tweet of the record
-                    msg = twitter.tweet_pour(tap.get_tap_id(),
-                                       tap.getFormattedThisPour(),
-                                       tap.getBeverage(),
-                                       volume_remaining,
-                                       get_temperature())  # TODO make temperature optional
-                    if SCROLLPHAT_ENABLED : scroll_once(msg)
-
-
-                if SLACK_ENABLED:
-                    # calculate how much beer is left in the keg
-                    volume_remaining = str(round(db.get_percentage(tap.get_tap_id()), 3) * 100)
-                    # tweet of the record
-                    msg = slack.slack_pour(tap.get_tap_id(),
-                                       tap.getFormattedThisPour(),
-                                       tap.getBeverage(),
-                                       volume_remaining,
-                                       get_temperature())  # TODO make temperature optional
-
-                # reset the counter
-                tap.thisPour = 0.0
-
-                # clear the display
-    #            scrollphat.clear()
-    #            scrollphat_cleared = True
-
-                # publish the updated value to mqtt broker
-                if config.getboolean("Mqtt", "enabled"): update_mqtt(tap.get_tap_id())
-
-            # display the pour in real time for debugging
-            if tap.thisPour > 0.05: logger.debug("[POUR EVENT] " + str(tap.get_tap_id()) + ":" + str(tap.thisPour))
-
-            # reset flow meter after each pour (2 secs of inactivity)
-            if (tap.thisPour <= 0.23 and currentTime - tap.lastClick > 2000): tap.thisPour = 0.0
+            tap.listen_for_pour()
 
         # go night night
         time.sleep(0.01)
