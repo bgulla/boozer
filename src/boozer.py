@@ -86,13 +86,13 @@ if config.getboolean("Slack", "enabled"):
 taps = []  # TODO, make this dynamic by reading teh configuration files
 # Tap 1
 tap1 = FlowMeter("not metric", [config.get("Taps", "tap1_beer_name")], tap_id=1,
-                 pin=config.getint("Taps", "tap1_gpio_pin"))
+                 pin=config.getint("Taps", "tap1_gpio_pin"), config)
 tap2 = FlowMeter("not metric", [config.get("Taps", "tap2_beer_name")], tap_id=2,
-                 pin=config.getint("Taps", "tap2_gpio_pin"))
+                 pin=config.getint("Taps", "tap2_gpio_pin"), config)
 tap3 = FlowMeter("not metric", [config.get("Taps", "tap3_beer_name")], tap_id=3,
-                 pin=config.getint("Taps", "tap3_gpio_pin"))
+                 pin=config.getint("Taps", "tap3_gpio_pin"), config)
 tap4 = FlowMeter("not metric", [config.get("Taps", "tap4_beer_name")], tap_id=4,
-                 pin=config.getint("Taps", "tap4_gpio_pin"))
+                 pin=config.getint("Taps", "tap4_gpio_pin"), config)
 taps = {tap1, tap2, tap3, tap4}
 
 # More config
@@ -182,7 +182,50 @@ for tap in taps:  # setup all the taps. add event triggers to the opening of the
 if TEMPERATURE_ENABLED:
     logger.info("Temperature: " + get_temperature())
 
+    def register_new_pour(self):
+        """
+        """
+        print "do stuff"
+        pour_size = round(self.thisPour * self.PINTS_IN_A_LITER, 3)
+                # receord that pour into the database
 
+        if not self.STANDALONE_MODE:
+            try:
+                db.update_tap(self.tap_id, pour_size) # record the pour in the db
+            except :
+                self.logger.error("unable to register new pour event to db")
+
+        # is twitter enabled?
+        if TWITTER_ENABLED and not self.STANDALONE_MODE:
+            # calculate how much beer is left in the keg
+            volume_remaining = str(round(db.get_percentage(self.tap_id), 3) * 100)
+            # tweet of the record
+            msg = twitter.tweet_pour(self.tap_id,
+                                self.getFormattedThisPour(),
+                                self.getBeverage(),
+                                volume_remaining,
+                                get_temperature())  # TODO make temperature optional
+            if SCROLLPHAT_ENABLED : scroll_once(msg)
+
+
+        if SLACK_ENABLED and not self.STANDALONE_MODE:
+            # calculate how much beer is left in the keg
+            volume_remaining = str(round(db.get_percentage(self.tap_id, 3) * 100))
+            # tweet of the record
+            msg = slack.slack_pour(self.tap_id,
+                                self.getFormattedThisPour(),
+                                self.getBeverage(),
+                                volume_remaining,
+                                get_temperature())  # TODO make temperature optional
+
+        # reset the counter
+        self.thisPour = 0.0
+
+        # publish the updated value to mqtt broker
+        if config.getboolean("Mqtt", "enabled") and not self.STANDALONE_MODE: update_mqtt(self.tap_id)
+
+        # display the pour in real time for debugging
+        if self.thisPour > 0.05: self.logger.debug("[POUR EVENT] " + str(self.tap_id) + ":" + str(self.thisPour))
 
 def main():
     print_config()

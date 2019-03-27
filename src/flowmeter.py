@@ -11,6 +11,7 @@ import slack_notify
 import requests
 import ConfigParser
 import logging
+import zope.event
 ### End
 
 
@@ -178,6 +179,7 @@ class FlowMeter():
         ## Test if the pour is above the minimum threshold and if so, register and complete the pour action.
         if (self.thisPour > self.POUR_THRESHOLD and currentTime - self.lastClick > 10000):  # 10 seconds of inactivity causes a tweet
             register_new_pour()
+            zope.event.notify(self.tap_id)
 
     def register_new_pour(self):
         """
@@ -186,40 +188,8 @@ class FlowMeter():
         pour_size = round(self.thisPour * self.PINTS_IN_A_LITER, 3)
                 # receord that pour into the database
 
-        if not self.STANDALONE_MODE:
-            try:
-                db.update_tap(self.tap_id, pour_size) # record the pour in the db
-            except :
-                self.logger.error("unable to register new pour event to db")
-
-        # is twitter enabled?
-        if TWITTER_ENABLED and not self.STANDALONE_MODE:
-            # calculate how much beer is left in the keg
-            volume_remaining = str(round(db.get_percentage(self.tap_id), 3) * 100)
-            # tweet of the record
-            msg = twitter.tweet_pour(self.tap_id,
-                                self.getFormattedThisPour(),
-                                self.getBeverage(),
-                                volume_remaining,
-                                get_temperature())  # TODO make temperature optional
-            if SCROLLPHAT_ENABLED : scroll_once(msg)
-
-
-        if SLACK_ENABLED and not self.STANDALONE_MODE:
-            # calculate how much beer is left in the keg
-            volume_remaining = str(round(db.get_percentage(self.tap_id, 3) * 100))
-            # tweet of the record
-            msg = slack.slack_pour(self.tap_id,
-                                self.getFormattedThisPour(),
-                                self.getBeverage(),
-                                volume_remaining,
-                                get_temperature())  # TODO make temperature optional
-
         # reset the counter
         self.thisPour = 0.0
-
-        # publish the updated value to mqtt broker
-        if config.getboolean("Mqtt", "enabled") and not self.STANDALONE_MODE: update_mqtt(self.tap_id)
 
         # display the pour in real time for debugging
         if self.thisPour > 0.05: self.logger.debug("[POUR EVENT] " + str(self.tap_id) + ":" + str(self.thisPour))
