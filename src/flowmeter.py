@@ -19,7 +19,7 @@ Flowmeter code for BOOZER
 
 """
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 GPIO.setmode(GPIO.BCM)  # use real GPIO numbering
 
 
@@ -44,6 +44,14 @@ class FlowMeter():
     STANDALONE_MODE = False
     config = False
 
+    logger = logging.getLogger()
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')    
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
+
     def __init__(self, displayFormat, beverage, tap_id, pin, config, STANDALONE_MODE=False):
         """
         Initializes the FlowMeter object.
@@ -56,7 +64,7 @@ class FlowMeter():
         self.displayFormat = displayFormat
         self.beverage = beverage
         self.clicks = 0
-        self.lastClick = int(time.time() * FlowMeter.MS_IN_A_SECOND)
+        self.lastClick = int(time.time() * self.MS_IN_A_SECOND)
         self.clickDelta = 0
         self.hertz = 0.0
         self.flow = 0.0
@@ -87,7 +95,7 @@ class FlowMeter():
         """
         self.previous_pour = vol
 
-    def update(self, currentTime=int(time.time() * FlowMeter.MS_IN_A_SECOND)):
+    def update(self, currentTime=int(time.time() * MS_IN_A_SECOND)):
         """
         Sets a timestamp of the last pour event.
 
@@ -99,11 +107,11 @@ class FlowMeter():
         self.clickDelta = max((currentTime - self.lastClick), 1)
         # calculate the instantaneous speed
         if (self.enabled == True and self.clickDelta < 1000):
-            self.hertz = FlowMeter.MS_IN_A_SECOND / self.clickDelta
+            self.hertz = self.MS_IN_A_SECOND / self.clickDelta
 
             # The Meat
-            self.flow = self.hertz / (FlowMeter.SECONDS_IN_A_MINUTE * 7.5)  # In Liters per second
-            instPour = (self.flow * (self.clickDelta / FlowMeter.MS_IN_A_SECOND))  # * 1.265 #1.265
+            self.flow = self.hertz / (self.SECONDS_IN_A_MINUTE * 7.5)  # In Liters per second
+            instPour = (self.flow * (self.clickDelta / self.MS_IN_A_SECOND))  # * 1.265 #1.265
 
             self.thisPour += instPour
             self.totalPour += instPour
@@ -111,7 +119,7 @@ class FlowMeter():
         self.lastClick = currentTime
 
         # Log it
-        logger.info("event-bus: registered tap " + str(tap_obj.get_tap_id()) + "successfully")
+        self.logger.info("event-bus: registered tap " + str(self.get_tap_id()) + "successfully")
 
     def getBeverage(self):
         """
@@ -138,7 +146,7 @@ class FlowMeter():
         if (self.displayFormat == 'metric'):
             return str(round(self.thisPour, 3)) + ' L'
         else:
-            return str(round(self.thisPour * FlowMeter.PINTS_IN_A_LITER, 3)) + ' pints'
+            return str(round(self.thisPour * self.PINTS_IN_A_LITER, 3)) + ' pints'
 
     def clear(self):
         """
@@ -151,37 +159,38 @@ class FlowMeter():
     def listen_for_pour(self):
         """
         """
-        currentTime = int(time.time() * FlowMeter.MS_IN_A_SECOND)
+        currentTime = int(time.time() * self.MS_IN_A_SECOND)
         
         if self.thisPour > 0.0:
-            pour_size = round(self.thisPour * FlowMeter.PINTS_IN_A_LITER, 3)
-            pour_size2 = round(self.thisPour * FlowMeter.PINTS_IN_A_LITER,
+            pour_size = round(self.thisPour * self.PINTS_IN_A_LITER, 3)
+            pour_size2 = round(self.thisPour * self.PINTS_IN_A_LITER,
                                 2)  # IDK what is going on here but it works and I am afraid to break it
             if pour_size != self.previous_pour:
-                logger.debug(
+                self.logger.debug(
                     "Tap: %s\t Poursize: %s vs %s" % (str(self.tap_id), str(pour_size), str(self.previous_pour)))
+                print "Tap: %s\t Poursize: %s vs %s" % (str(self.tap_id), str(pour_size), str(self.previous_pour))
                 if pour_size2 < 0.05:
-                    continue
-                update_display(str(pour_size2).replace("0.", "."))
+                    return #continue
+                #update_display(str(pour_size2).replace("0.", "."))
                 self.set_previous_pour(pour_size)
-                scrollphat_cleared = False
+                #scrollphat_cleared = False
 
         ## Test if the pour is above the minimum threshold and if so, register and complete the pour action.
-        if (self.thisPour > POUR_THRESHOLD and currentTime - self.lastClick > 10000):  # 10 seconds of inactivity causes a tweet
+        if (self.thisPour > self.POUR_THRESHOLD and currentTime - self.lastClick > 10000):  # 10 seconds of inactivity causes a tweet
             register_new_pour()
 
     def register_new_pour(self):
         """
         """
         print "do stuff"
-        pour_size = round(self.thisPour * FlowMeter.PINTS_IN_A_LITER, 3)
+        pour_size = round(self.thisPour * self.PINTS_IN_A_LITER, 3)
                 # receord that pour into the database
 
         if not self.STANDALONE_MODE:
             try:
                 db.update_tap(self.tap_id, pour_size) # record the pour in the db
             except :
-                logger.error("unable to register new pour event to db")
+                self.logger.error("unable to register new pour event to db")
 
         # is twitter enabled?
         if TWITTER_ENABLED and not self.STANDALONE_MODE:
@@ -213,10 +222,10 @@ class FlowMeter():
         if config.getboolean("Mqtt", "enabled") and not self.STANDALONE_MODE: update_mqtt(self.tap_id)
 
         # display the pour in real time for debugging
-        if self.thisPour > 0.05: logger.debug("[POUR EVENT] " + str(self.tap_id) + ":" + str(self.thisPour))
+        if self.thisPour > 0.05: self.logger.debug("[POUR EVENT] " + str(self.tap_id) + ":" + str(self.thisPour))
 
         # reset flow meter after each pour (2 secs of inactivity)
-        if (self.thisPour <= POUR_THRESHOLD and currentTime - self.lastClick > 2000): self.thisPour = 0.0
+        if (self.thisPour <= self.POUR_THRESHOLD and currentTime - self.lastClick > 2000): self.thisPour = 0.0
 
 
 def main():
@@ -233,5 +242,11 @@ def main():
 
     # setup the flowmeter event bus
     GPIO.add_event_detect(test_tap.get_pin(), GPIO.RISING, callback=lambda *a: test_tap.update(), bouncetime=20)
+    print "here we go listening away"
     while True:
         test_tap.listen_for_pour()
+        time.sleep(0.01)
+
+# it's go time.
+if __name__ == "__main__":
+    main()
