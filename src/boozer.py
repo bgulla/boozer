@@ -76,14 +76,10 @@ if config.getboolean("Slack", "enabled"):
 # set up the flow meters
 taps = []  # TODO, make this dynamic by reading teh configuration files
 # Tap 1
-tap1 = FlowMeter("not metric", [config.get("Taps", "tap1_beer_name")], tap_id=1,
-                 pin=config.getint("Taps", "tap1_gpio_pin"), config)
-tap2 = FlowMeter("not metric", [config.get("Taps", "tap2_beer_name")], tap_id=2,
-                 pin=config.getint("Taps", "tap2_gpio_pin"), config)
-tap3 = FlowMeter("not metric", [config.get("Taps", "tap3_beer_name")], tap_id=3,
-                 pin=config.getint("Taps", "tap3_gpio_pin"), config)
-tap4 = FlowMeter("not metric", [config.get("Taps", "tap4_beer_name")], tap_id=4,
-                 pin=config.getint("Taps", "tap4_gpio_pin"), config)
+tap1 = FlowMeter("not metric", [config.get("Taps", "tap1_beer_name")], tap_id=1, pin=config.getint("Taps", "tap1_gpio_pin"), config=config)
+tap2 = FlowMeter("not metric", [config.get("Taps", "tap2_beer_name")], tap_id=2, pin=config.getint("Taps", "tap2_gpio_pin"), config=config)
+tap3 = FlowMeter("not metric", [config.get("Taps", "tap3_beer_name")], tap_id=3, pin=config.getint("Taps", "tap3_gpio_pin"), config=config)
+tap4 = FlowMeter("not metric", [config.get("Taps", "tap4_beer_name")], tap_id=4, pin=config.getint("Taps", "tap4_gpio_pin"), config=config)
 taps = {tap1, tap2, tap3, tap4}
 
 # More config
@@ -180,7 +176,7 @@ def register_pour_event( tap_obj ):
     if tap_event_type == flowmeter.POUR_FULL:
         # we have detected that a full beer was poured
         register_new_pour(tap_obj)
-    else if tap_event_type == flowmeter.POUR_UPDATE:
+    elif tap_event_type == flowmeter.POUR_UPDATE:
         # it was just a mid pour 
         print "brandon do something like update the scrollphat display or do nothing. it's cool"
 
@@ -191,7 +187,6 @@ def register_new_pour(tap_obj):
     print "do stuff"
     pour_size = round(tap_obj.thisPour * tap_obj.PINTS_IN_A_LITER, 3)
             # receord that pour into the database
-
     try:
         db.update_tap(tap_obj.tap_id, pour_size) # record the pour in the db
     except :
@@ -208,7 +203,6 @@ def register_new_pour(tap_obj):
                             volume_remaining,
                             get_temperature())  # TODO make temperature optional
         if SCROLLPHAT_ENABLED : scroll_once(msg)
-
 
     if SLACK_ENABLED:
         # calculate how much beer is left in the keg

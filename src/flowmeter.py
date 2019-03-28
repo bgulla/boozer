@@ -127,7 +127,8 @@ class FlowMeter():
         self.lastClick = currentTime
 
         # Log it
-        self.logger.info("event-bus: registered tap " + str(self.get_tap_id()) + "successfully")
+#        self.logger.info("event-bus: registered tap " + str(self.get_tap_id()) + " successfully")
+        self.logger.info("Tap[%i] reading: %s" %( self.get_tap_id(), str(self.totalPour)))
 
     def getBeverage(self):
         """
