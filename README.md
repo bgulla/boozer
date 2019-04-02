@@ -35,7 +35,7 @@ The following hardware was used in the inital build of boozer but not necessaril
  
 
 ## Running in Docker
-Simplify deployment with Docker. Instructions for installing docker on RaspberryPi's [here](https://www.raspberrypi.org/blog/docker-comes-to-raspberry-pi/). Works in Kubernetes, if you're into the whole distributed computing thing. This assumes you have a begineer level knowledge of Docker. 
+Simplify deployment with Docker. Instructions for installing docker on RaspberryPi's [here](https://www.raspberrypi.org/blog/docker-comes-to-raspberry-pi/). Works in Kubernetes, if you're into the whole distributed computing thing. This assumes you have a beginner-level knowledge of Docker. 
 
 ```bash
 docker run --rm  -d --name="boozer" \
