@@ -40,9 +40,9 @@ Simplify deployment with Docker. Instructions for installing docker on Raspberry
 ```bash
 docker run --rm  -d --name="boozer" \
     --privileged \
-    -v <config.ini>:/boozer/config.ini \
-    -v <db.sqlite>:/boozer/db.sqlite \
-    -t boozer/boozer
+    -v </path/to/config.ini>:/boozer/config.ini \
+    -v </path/to/db.sqlite>:/boozer/db.sqlite \
+    -t bgulla/boozer
 ```
 
 ## Configuration Sample
