@@ -81,8 +81,8 @@ except:
 # setup temperaturesensor client
 try:
 	if config.getboolean("Temperature", "enabled"):
-    TEMPERATURE_ENABLED = True
-    temperature_url = config.get("Temperature", "endpoint")
+		TEMPERATURE_ENABLED = True
+    	temperature_url = config.get("Temperature", "endpoint")
 except: 
 	logger.info("Temperature Entry not found in %s, setting TEMPERATURE_ENABLED to False")
 	TEMPERATURE_ENABLED = False
