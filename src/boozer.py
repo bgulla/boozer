@@ -24,7 +24,6 @@ import os
 CONFIG_FILEPATH = "./config.ini"
 DB_FILEPATH = "./db.sqlite"
 
-
 scrollphat_cleared = True ## TODO: decouple this
 
 # Setup the configuration
@@ -62,36 +61,43 @@ if not os.path.isfile(CONFIG_FILEPATH):
 	sys.exit(1)
 
 # setup twitter client
-if config.getboolean("Twitter", "enabled"):
-    TWITTER_ENABLED = True
-    twitter = twitter_notify.TwitterNotify(config)
+try:
+	if config.getboolean("Twitter", "enabled"):
+	    TWITTER_ENABLED = True
+	    twitter = twitter_notify.TwitterNotify(config)
+except: 
+	logger.info("Twitter Entry not found in %s, setting TWITTER_ENABLED to False")
+	TWITTER_ENABLED = False
 
 # setup mqtt client
-if config.getboolean("Mqtt", "enabled"):
-    MQTT_ENABLED = True
-    mqtt_client = bar_mqtt.BoozerMqtt(config.get("Mqtt", "broker"))
+try:
+	if config.getboolean("Mqtt", "enabled"):
+	    MQTT_ENABLED = True
+	    mqtt_client = bar_mqtt.BoozerMqtt(config.get("Mqtt", "broker"))
+except: 
+	logger.info("MQTT Entry not found in %s, setting MQTT_ENABLED to False")
+	MQTT_ENABLED = False
 
 # setup temperaturesensor client
-if config.getboolean("Temperature", "enabled"):
+try:
+	if config.getboolean("Temperature", "enabled"):
     TEMPERATURE_ENABLED = True
     temperature_url = config.get("Temperature", "endpoint")
-
-
+except: 
+	logger.info("Temperature Entry not found in %s, setting TEMPERATURE_ENABLED to False")
+	TEMPERATURE_ENABLED = False
 
 # setup slack client
-if config.getboolean("Slack", "enabled"):
-    SLACK_ENABLED = True
-    slack = slack_notify.SlackNotify(config)
+try:
+	if config.getboolean("Slack", "enabled"):
+	    SLACK_ENABLED = True
+	    slack = slack_notify.SlackNotify(config)
+except: 
+	logger.info("Slack Entry not found in %s, setting SLACK_ENABLED to False")
+	TEMPERATURE_ENABLED = False
 
 # set up the flow meters
-taps = []  # TODO, make this dynamic by reading teh configuration files
-# Tap 1
-#tap1 = FlowMeter("not metric", [config.get("Taps", "tap1_beer_name")], tap_id=1, pin=config.getint("Taps", "tap1_gpio_pin"), config=config)
-#tap2 = FlowMeter("not metric", [config.get("Taps", "tap2_beer_name")], tap_id=2, pin=config.getint("Taps", "tap2_gpio_pin"), config=config)
-#tap3 = FlowMeter("not metric", [config.get("Taps", "tap3_beer_name")], tap_id=3, pin=config.getint("Taps", "tap3_gpio_pin"), config=config)
-#tap4 = FlowMeter("not metric", [config.get("Taps", "tap4_beer_name")], tap_id=4, pin=config.getint("Taps", "tap4_gpio_pin"), config=config)
-#taps = {tap1, tap2, tap3, tap4}
-
+taps = []  
 for tap in range(1,10): # limit of 10 taps
 	str_tap = "tap%i" % tap 
 	str_tapN_gpio_pin = "%s_gpio_pin" % str_tap
