@@ -42,7 +42,7 @@ docker run --rm  -d --name="boozer" \
     --privileged \
     -v </path/to/config.ini>:/boozer/config.ini \
     -v </path/to/db.sqlite>:/boozer/db.sqlite \
-    -t bgulla/boozer
+    -t boozerbar/boozer
 ```
 
 ## Configuration Sample
@@ -164,3 +164,4 @@ Most of your questions can probably be answered in the [reddit post](https://www
 ## Updates
 * 5-22-2018: Temperature sensors are now optional.
 * 7-1-2018: Toolkit functionality finally documented. Reset tap db values and more. 
+* 3-2019: new docker image (boozerbar/boozer). new console logging. more flexible config.
