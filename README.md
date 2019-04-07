@@ -42,7 +42,7 @@ docker run --rm  -d --name="boozer" \
     --privileged \
     -v <config.ini>:/boozer/config.ini \
     -v <db.sqlite>:/boozer/db.sqlite \
-    -t bgulla/boozer
+    -t boozer/boozer
 ```
 
 ## Configuration Sample

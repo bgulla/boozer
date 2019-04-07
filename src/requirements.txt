@@ -1,3 +1,4 @@
+PrettyTable
 tweepy
 pushbullet.py
 paho-mqtt
@@ -5,3 +6,4 @@ paho-mqtt
 scrollphat
 #luma.oled
 zope.event
+pyfiglet

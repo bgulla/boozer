@@ -16,10 +16,10 @@ import zope.event
 
 
 # Event vars
+
 POUR_RESET = 1
 POUR_FULL = 3
 POUR_UPDATE = 5
-
 
 """
 Flowmeter code for BOOZER
@@ -31,6 +31,9 @@ GPIO.setmode(GPIO.BCM)  # use real GPIO numbering
 
 
 class FlowMeter():
+    POUR_RESET = 1
+    POUR_FULL = 3
+    POUR_UPDATE = 5
     PINTS_IN_A_LITER = 2.11338
     SECONDS_IN_A_MINUTE = 60
     MS_IN_A_SECOND = 1000.0
@@ -139,6 +142,9 @@ class FlowMeter():
         # return str(random.choice(self.beverage))
         return self.beverage
 
+    def get_beverage_name(self):
+        return self.beverage
+
     def get_tap_id(self):
         """
         Returns the tap identifier as an int.
@@ -185,12 +191,15 @@ class FlowMeter():
                 if pour_size2 < 0.05:
                     return # ignore small events
                 self.set_previous_pour(pour_size)
-                self.last_event_type = POUR_UPDATE # set last event status for event bus in boozer
+                self.last_event_type = self.POUR_UPDATE # set last event status for event bus in boozer
 
         ## Test if the pour is above the minimum threshold and if so, register and complete the pour action.
         if (self.thisPour > self.POUR_THRESHOLD and currentTime - self.lastClick > 10000):  # 10 seconds of inactivity causes a tweet
+            logger.info("--- REGISTERING-FULL-POUR   %s vs %s " % (str(self.thisPour), str(self.POUR_THRESHOLD)) ) 
             self.register_new_pour(currentTime)
             self.last_event_type = POUR_FULL # set last event status for event bus in boozer
+        else:
+            logger.debug("--- Pour -> %s vs Threshold -> %s " % (str(self.thisPour), str(self.POUR_THRESHOLD)) ) 
         
         zope.event.notify(self) # notify the boozer event bus that a new pour has been registered. 
                                 # it will check 'last_event_type' to decide to kick off actions related to a full pour up just update the database for a half/min pour.
@@ -211,7 +220,6 @@ class FlowMeter():
 
 
 def main():
-
     # bring in config
     CONFIG_FILE = "./config.ini"
     config = ConfigParser.ConfigParser()
