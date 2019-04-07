@@ -15,6 +15,12 @@ import zope.event
 ### End
 
 
+# Event vars
+
+POUR_RESET = 1
+POUR_FULL = 3
+POUR_UPDATE = 5
+
 """
 Flowmeter code for BOOZER
 
@@ -25,6 +31,9 @@ GPIO.setmode(GPIO.BCM)  # use real GPIO numbering
 
 
 class FlowMeter():
+    POUR_RESET = 1
+    POUR_FULL = 3
+    POUR_UPDATE = 5
     PINTS_IN_A_LITER = 2.11338
     SECONDS_IN_A_MINUTE = 60
     MS_IN_A_SECOND = 1000.0
@@ -44,6 +53,7 @@ class FlowMeter():
     previous_pour = 0.0
     STANDALONE_MODE = False
     config = False
+    last_event_type = POUR_RESET # this baselines the pour event to be reset
 
     logger = logging.getLogger()
     handler = logging.StreamHandler()
@@ -120,7 +130,8 @@ class FlowMeter():
         self.lastClick = currentTime
 
         # Log it
-        self.logger.info("event-bus: registered tap " + str(self.get_tap_id()) + "successfully")
+#        self.logger.info("event-bus: registered tap " + str(self.get_tap_id()) + " successfully")
+        self.logger.info("Tap[%i] reading: %s" %( self.get_tap_id(), str(self.totalPour)))
 
     def getBeverage(self):
         """
@@ -131,12 +142,21 @@ class FlowMeter():
         # return str(random.choice(self.beverage))
         return self.beverage
 
+    def get_beverage_name(self):
+        return self.beverage
+
     def get_tap_id(self):
         """
         Returns the tap identifier as an int.
         :return: int
         """
         return self.tap_id
+    
+    def reset_pour_status(self):
+        """
+        This will reset a pour to a cleared event. this is needed to properly track what beer has already been registered in the database.
+        """
+        self.last_event_type = POUR_RESET
 
     def getFormattedThisPour(self):
         """
@@ -164,30 +184,31 @@ class FlowMeter():
         
         if self.thisPour > 0.0:
             pour_size = round(self.thisPour * self.PINTS_IN_A_LITER, 3)
-            pour_size2 = round(self.thisPour * self.PINTS_IN_A_LITER,
-                                2)  # IDK what is going on here but it works and I am afraid to break it
+            pour_size2 = round(self.thisPour * self.PINTS_IN_A_LITER,2)  # IDK what is going on here but it works and I am afraid to break it
             if pour_size != self.previous_pour:
                 self.logger.debug(
                     "Tap: %s\t Poursize: %s vs %s" % (str(self.tap_id), str(pour_size), str(self.previous_pour)))
-                print "Tap: %s\t Poursize: %s vs %s" % (str(self.tap_id), str(pour_size), str(self.previous_pour))
                 if pour_size2 < 0.05:
-                    return #continue
-                #update_display(str(pour_size2).replace("0.", "."))
+                    return # ignore small events
                 self.set_previous_pour(pour_size)
-                #scrollphat_cleared = False
+                self.last_event_type = self.POUR_UPDATE # set last event status for event bus in boozer
 
         ## Test if the pour is above the minimum threshold and if so, register and complete the pour action.
         if (self.thisPour > self.POUR_THRESHOLD and currentTime - self.lastClick > 10000):  # 10 seconds of inactivity causes a tweet
-            register_new_pour()
-            zope.event.notify(self.tap_id)
+            logger.info("--- REGISTERING-FULL-POUR   %s vs %s " % (str(self.thisPour), str(self.POUR_THRESHOLD)) ) 
+            self.register_new_pour(currentTime)
+            self.last_event_type = POUR_FULL # set last event status for event bus in boozer
+        else:
+            logger.debug("--- Pour -> %s vs Threshold -> %s " % (str(self.thisPour), str(self.POUR_THRESHOLD)) ) 
+        
+        zope.event.notify(self) # notify the boozer event bus that a new pour has been registered. 
+                                # it will check 'last_event_type' to decide to kick off actions related to a full pour up just update the database for a half/min pour.
 
-    def register_new_pour(self):
+    def register_new_pour(self, currentTime):
         """
         """
-        print "do stuff"
         pour_size = round(self.thisPour * self.PINTS_IN_A_LITER, 3)
-                # receord that pour into the database
-
+                # record that pour into the database
         # reset the counter
         self.thisPour = 0.0
 
@@ -199,7 +220,6 @@ class FlowMeter():
 
 
 def main():
-
     # bring in config
     CONFIG_FILE = "./config.ini"
     config = ConfigParser.ConfigParser()
@@ -212,7 +232,6 @@ def main():
 
     # setup the flowmeter event bus
     GPIO.add_event_detect(test_tap.get_pin(), GPIO.RISING, callback=lambda *a: test_tap.update(), bouncetime=20)
-    print "here we go listening away"
     while True:
         test_tap.listen_for_pour()
         time.sleep(0.01)
