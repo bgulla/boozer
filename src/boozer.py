@@ -20,6 +20,8 @@ import time
 import zope.event
 from prettytable import PrettyTable
 import os 
+import socket
+from contextlib import closing
 
 CONFIG_FILEPATH = "./config.ini"
 DB_FILEPATH = "./db.sqlite"
@@ -51,6 +53,18 @@ logger.addHandler(handler)
 logger.setLevel(logging.DEBUG)
 logger.setLevel(logging.INFO)
 
+def update_mqtt(tap_id):
+    """
+
+    :param tap_id:
+    :return:
+    """
+    percent = db.get_percentage100(tap_id)
+    topic = "bar/tap%s" % str(tap_id)
+    try:
+    	mqtt_client.pub_mqtt(topic, str(percent))
+    except:
+    	logger.error("Unable to publish mqtt update for tap: %i" % int(tap_id))
 
 current_path = os.path.dirname(os.path.realpath(__file__))
 if not os.path.isfile(DB_FILEPATH):
@@ -73,7 +87,7 @@ except:
 try:
 	if config.getboolean("Mqtt", "enabled"):
 	    MQTT_ENABLED = True
-	    mqtt_client = bar_mqtt.BoozerMqtt(config.get("Mqtt", "broker"))
+	    mqtt_client = bar_mqtt.BoozerMqtt(config.get("Mqtt", "broker"), port=config.get("Mqtt", "port"))
 except: 
 	logger.info("MQTT Entry not found in %s, setting MQTT_ENABLED to False")
 	MQTT_ENABLED = False
@@ -102,6 +116,7 @@ for tap in range(1,10): # limit of 10 taps
 	str_tap = "tap%i" % tap 
 	str_tapN_gpio_pin = "%s_gpio_pin" % str_tap
 	str_tapN_beer_name = "%s_beer_name" % str_tap
+	str_tapN_reset_database = "%s_reset_database" % str_tap
 
 	try:
 		this_tap_gpio_pin = config.getint("Taps", str_tapN_gpio_pin) # this looks for the tap gpio pin such as "tap1_gpio_pin"
@@ -111,11 +126,33 @@ for tap in range(1,10): # limit of 10 taps
 	except:
 		break
 
+	# If mqtt is enabled, we need to push the new value. This is because mqtt does not always persist and that's a good thing to do.
+	if MQTT_ENABLED:
+		update_mqtt(tap)
+
+	# Check to see if we need to reset the database value
+	try:
+		if config.getboolean('Taps', str_tapN_reset_database):
+			db.reset_tap_val(tap)
+			logger.info("Detected %s. Successfully reset the database entry to 100 percent volume remaining." % str_tapN_reset_database)
+	except:
+		continue
+
 if len(taps) < 1:
 	# if there were no taps read in, there's no point living anymore. go fatal
 	logger.fatal("FATAL - No taps were read in from the config file. Are they formatted correctly?")
+	sys.exit(1)
 
 # More config
+def is_port_open(host, port):
+	import socket
+	status = True
+	
+	with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
+		sock.settimeout(2) 
+		if sock.connect_ex(((host), (port))) == 0:
+			status = False
+	return status
 
 def get_enabled_string(val):
     if val == True:
@@ -146,6 +183,19 @@ def print_config():
 		taps_table.add_row([str(tap.get_tap_id()), str(tap.get_beverage_name()[0]), str(tap.get_pin()), str(db.get_percentage100(tap.get_tap_id()))])
 	print taps_table
 
+	if MQTT_ENABLED == True:    
+		mqtt_host = config.get("Mqtt", "broker")
+		mqtt_port = config.get("Mqtt", "port")
+		mqtt_table = PrettyTable(['MQTT-Key','MQTT-Value'])
+		mqtt_table.add_row(['Broker', str(mqtt_host)])
+		mqtt_table.add_row(['Port', str(mqtt_port)])
+		conn_str = "Connected"
+		if is_port_open(host=mqtt_host, port=int(mqtt_port)):
+			conn_str = "Unable to Connect"
+		mqtt_table.add_row(['Connected?', conn_str])
+
+		print mqtt_table
+
 
 def get_temperature():
     """
@@ -172,15 +222,7 @@ def record_pour(tap_id, pour):
     db.update_tap(tap_id, pour)
 
 
-def update_mqtt(tap_id):
-    """
 
-    :param tap_id:
-    :return:
-    """
-    percent = db.get_percentage100(tap_id)
-    topic = "bar/tap%s" % str(tap_id)
-    mqtt_client.pub_mqtt(topic, str(percent))
 
 
 def update_display(msg):
@@ -241,9 +283,9 @@ def register_new_pour(tap_obj):
     
     try:
         db.update_tap(tap_obj.tap_id, pour_size) # record the pour in the db
-        self.logger.info("Database updated: %s %s " % (str(tap_obj.tap_id), str(pour_size)))
+        logger.info("Database updated: %s %s " % (str(tap_obj.tap_id), str(pour_size)))
     except :
-        self.logger.error("unable to register new pour event to db")
+        logger.error("unable to register new pour event to db")
 	
 	
 	# calculate how much beer is left in the keg
@@ -281,7 +323,7 @@ def register_new_pour(tap_obj):
     if config.getboolean("Mqtt", "enabled"): update_mqtt(tap_obj.tap_id)
 
     # display the pour in real time for debugging
-    if tap_obj.thisPour > 0.05: self.logger.debug("[POUR EVENT] " + str(tap_obj.tap_id) + ":" + str(tap_obj.thisPour))
+    if tap_obj.thisPour > 0.05: logger.debug("[POUR EVENT] " + str(tap_obj.tap_id) + ":" + str(tap_obj.thisPour))
 
 def main():
     print_config()
