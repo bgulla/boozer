@@ -3,11 +3,23 @@
 import json
 import requests
 import ConfigParser
+import logging
 
 # Static vars
 DEGREES="°"
 
+logger = logging.getLogger(__name__)
+
 class SlackNotify():
+
+    logger = logging.getLogger()
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')    
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
+
     def __init__(self, config_obj):
         """
         Initializes the Slack client library.
@@ -27,11 +39,14 @@ class SlackNotify():
         :param temperature: float
         :return: nothing
         """
-        msg = "I just poured " + volume_poured + " from tap " + str(tap_id) + " (" + volume_remaining + "% remaining) at " + str(temperature) + DEGREES
-        try:
-            self.post_slack(msg)
-        except:
-            log.error("unable to submit slack")
+        msg = "I just poured " + volume_poured + " from tap " + str(tap_id) + " (" + volume_remaining + "% remaining) "
+        if temperature is not None:
+            msg = msg + "at " + str(temperature) + DEGREES + "."
+        else:
+            msg = msg + "."
+
+        
+        self.post_slack(msg)
         return msg
 
     def post_slack(self,msg):
@@ -47,12 +62,14 @@ class SlackNotify():
         response = requests.post(
             self.webhookurl, data=json.dumps(slack_data),
             headers={'Content-Type': 'application/json'}
+            #self.logger.info("Slack msg sent: %s" % msg)
         )
         if response.status_code != 200:
             raise ValueError(
                 'Request to slack returned an error %s, the response is:\n%s'
                 % (response.status_code, response.text)
             )
+            #self.logger.error("Slack unable to post msg: %s" % msg)
         return
 
 

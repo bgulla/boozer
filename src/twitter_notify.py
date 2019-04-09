@@ -37,7 +37,11 @@ class TwitterNotify():
         :param temperature: float
         :return: nothing
         """
-        msg = "I just poured " + volume_poured + " from tap " + str(tap_id) + " (" + volume_remaining + "% remaining) at " + str(temperature) + DEGREES
+        msg = "I just poured " + volume_poured + " from tap " + str(tap_id) + " (" + volume_remaining + "% remaining) "
+        if temperature is not None:
+            msg = msg + "at " + str(temperature) + DEGREES + "."
+        else:
+            msg = msg + "."
         try:
             self.post_tweet(msg)
         except:

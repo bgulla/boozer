@@ -195,11 +195,11 @@ class FlowMeter():
 
         ## Test if the pour is above the minimum threshold and if so, register and complete the pour action.
         if (self.thisPour > self.POUR_THRESHOLD and currentTime - self.lastClick > 10000):  # 10 seconds of inactivity causes a tweet
-            logger.info("--- REGISTERING-FULL-POUR   %s vs %s " % (str(self.thisPour), str(self.POUR_THRESHOLD)) ) 
+            self.logger.info("--- REGISTERING-FULL-POUR   %s vs %s " % (str(self.thisPour), str(self.POUR_THRESHOLD)) ) 
             self.register_new_pour(currentTime)
             self.last_event_type = POUR_FULL # set last event status for event bus in boozer
         else:
-            logger.debug("--- Pour -> %s vs Threshold -> %s " % (str(self.thisPour), str(self.POUR_THRESHOLD)) ) 
+            self.logger.debug("--- Pour -> %s vs Threshold -> %s " % (str(self.thisPour), str(self.POUR_THRESHOLD)) ) 
         
         zope.event.notify(self) # notify the boozer event bus that a new pour has been registered. 
                                 # it will check 'last_event_type' to decide to kick off actions related to a full pour up just update the database for a half/min pour.
