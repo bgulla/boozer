@@ -12,14 +12,6 @@ logger = logging.getLogger(__name__)
 
 class SlackNotify():
 
-    logger = logging.getLogger()
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')    
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-    logger.setLevel(logging.DEBUG)
-    logger.setLevel(logging.INFO)
-
     def __init__(self, config_obj):
         """
         Initializes the Slack client library.
@@ -28,7 +20,7 @@ class SlackNotify():
         """
         self.webhookurl = config_obj.get("Slack", "webhookurl")
 
-    def slack_pour(self, tap_id, volume_poured, beverage_name, volume_remaining, temperature):
+    def slack_pour(self, tap_id, volume_poured, beverage_name, volume_remaining, temperature=None):
         """
         Composes the slack message and passes it to the function that actually connects to slack and slacks.
 
