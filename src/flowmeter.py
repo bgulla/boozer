@@ -56,14 +56,6 @@ class FlowMeter():
     config = False
     last_event_type = POUR_RESET # this baselines the pour event to be reset
 
-    logger = logging.getLogger()
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')    
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-    logger.setLevel(logging.DEBUG)
-    logger.setLevel(logging.INFO)
-
     def __init__(self, displayFormat, beverage, tap_id, pin, config, STANDALONE_MODE=False):
         """
         Initializes the FlowMeter object.
