@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class BoozerMqtt():
 
-    def __init__(self, brokerhost, port=1883):
+    def __init__(self, brokerhost, port=1883, username=None, password=None):
         """
         Initializes the Boozer MQTT client library.
 
@@ -20,6 +20,8 @@ class BoozerMqtt():
         """
         self.broker = brokerhost
         self.port = int(port)
+        self.username = username
+        self.password = password
 
     def pub_mqtt(self, topic, value):
         """
@@ -31,11 +33,14 @@ class BoozerMqtt():
         :return: nothing
         """
         client1 = paho.Client("control1")  # create client object
+        if self.username is not None and self.password is not None:
+            client1.username_pw_set(self.username,self.password)
         try:
             client1.connect(self.broker, self.port)  # establish connection
         except:
             logger.error("unable to connect to mqtt on %s:%i" % (self.broker, self.port))
         logger.info("mqtt topic updated: topic: " + topic + " | value: " + value)
+
         return client1.publish(topic, value)  # publish
 
     def get_value(self, topic):
@@ -47,6 +52,8 @@ class BoozerMqtt():
 
         """
         client1 = paho.Client("control1")  # create client object
+        if self.username is not None and self.password is not None:
+            client1.username_pw_set(self.username,self.password)
         try:
             client1.connect(self.broker, self.port)  # establish connection
         except:

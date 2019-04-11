@@ -38,6 +38,7 @@ class FlowMeter():
     SECONDS_IN_A_MINUTE = 60
     MS_IN_A_SECOND = 1000.0
     POUR_THRESHOLD = 0.23 ## This is the minimum amount of volume to be poured before it is registered as a complete pour.
+    POUR_THRESHOLD = 0.075
     displayFormat = 'metric'
     beverage = 'beer'
     enabled = True
@@ -131,7 +132,7 @@ class FlowMeter():
 
         # Log it
 #        self.logger.info("event-bus: registered tap " + str(self.get_tap_id()) + " successfully")
-        self.logger.info("Tap[%i] reading: %s" %( self.get_tap_id(), str(self.totalPour)))
+        self.logger.info("Tap[%i] Pour Event: %s pints." %( self.get_tap_id(), str(round(self.totalPour,3))))
 
     def getBeverage(self):
         """
@@ -193,15 +194,15 @@ class FlowMeter():
                 self.set_previous_pour(pour_size)
                 self.last_event_type = self.POUR_UPDATE # set last event status for event bus in boozer
 
-        ## Test if the pour is above the minimum threshold and if so, register and complete the pour action.
-        if (self.thisPour > self.POUR_THRESHOLD and currentTime - self.lastClick > 10000):  # 10 seconds of inactivity causes a tweet
-            self.logger.info("--- REGISTERING-FULL-POUR   %s vs %s " % (str(self.thisPour), str(self.POUR_THRESHOLD)) ) 
-            self.register_new_pour(currentTime)
-            self.last_event_type = POUR_FULL # set last event status for event bus in boozer
-        else:
-            self.logger.debug("--- Pour -> %s vs Threshold -> %s " % (str(self.thisPour), str(self.POUR_THRESHOLD)) ) 
+            ## Test if the pour is above the minimum threshold and if so, register and complete the pour action.
+            if (self.thisPour > self.POUR_THRESHOLD and currentTime - self.lastClick > 10000):  # 10 seconds of inactivity causes a tweet
+                self.logger.info("--- REGISTERING-FULL-POUR   %s vs %s " % (str(self.thisPour), str(self.POUR_THRESHOLD)) ) 
+                self.register_new_pour(currentTime)
+                self.last_event_type = POUR_FULL # set last event status for event bus in boozer
+            else:
+                self.logger.debug("--- Pour -> %s vs Threshold -> %s " % (str(self.thisPour), str(self.POUR_THRESHOLD)) ) 
         
-        zope.event.notify(self) # notify the boozer event bus that a new pour has been registered. 
+            zope.event.notify(self) # notify the boozer event bus that a new pour has been registered. 
                                 # it will check 'last_event_type' to decide to kick off actions related to a full pour up just update the database for a half/min pour.
 
     def register_new_pour(self, currentTime):

@@ -39,6 +39,8 @@ class Boozer:
 	scrollphat_cleared = True ## TODO: decouple this
 	taps = []
 	mqtt_client = None
+	twitter_client = None
+	slack_client = None
 
 	def __init__(self):
 		# Setup the configuration
@@ -72,17 +74,26 @@ class Boozer:
 		try:
 			if self.config.getboolean("Twitter", "enabled"):
 				self.TWITTER_ENABLED = True
-				twitter = twitter_notify.TwitterNotify(self.config)
+				self.twitter_client = twitter_notify.TwitterNotify(self.config)
 		except: 
 			logger.info("Twitter Entry not found in %s, setting TWITTER_ENABLED to False", sys.exc_info()[0] )
-			TWITTER_ENABLED = False
+			self.TWITTER_ENABLED = False
 
 		# setup mqtt client
 		try:
 			if self.config.getboolean("Mqtt", "enabled"):
 				logger.info("config: MQTT enabled")
 				self.MQTT_ENABLED = True
-				self.mqtt_client = bar_mqtt.BoozerMqtt(self.config.get("Mqtt", "broker"), port=self.config.get("Mqtt", "port"))
+
+				# Read in username and password
+				username = None
+				password = None
+				try:
+					username = self.config.get("Mqtt", "username")
+					password = self.config.get("Mqtt", "password")
+				except:
+					logger.debug("skipping mqtt username/password because at least one was missing.")
+				self.mqtt_client = bar_mqtt.BoozerMqtt(self.config.get("Mqtt", "broker"), port=self.config.get("Mqtt", "port"), username=username, password=password)
 		except: 
 			logger.info("MQTT Entry not found in %s, setting MQTT_ENABLED to False" % self.CONFIG_FILEPATH)
 			self.MQTT_ENABLED = False
@@ -100,7 +111,7 @@ class Boozer:
 		try:
 			if self.config.getboolean("Slack", "enabled"):
 				self.SLACK_ENABLED = True
-				slack = slack_notify.SlackNotify(self.config)
+				self.slack_client = slack_notify.SlackNotify(self.config)
 		except: 
 			logger.info("Slack Entry not found in %s, setting SLACK_ENABLED to False")
 			self.TEMPERATURE_ENABLED = False
@@ -206,8 +217,13 @@ class Boozer:
 			mqtt_host = self.config.get("Mqtt", "broker")
 			mqtt_port = self.config.get("Mqtt", "port")
 			mqtt_table = PrettyTable(['MQTT-Key','MQTT-Value'])
-			mqtt_table.add_row(['Broker', str(mqtt_host)])
-			mqtt_table.add_row(['Port', str(mqtt_port)])
+			mqtt_table.add_row(['broker', str(mqtt_host)])
+			mqtt_table.add_row(['port', str(mqtt_port)])
+			try:
+				mqtt_table.add_row(['username', self.config.get("Mqtt", "username")])
+				mqtt_table.add_row(['username', self.config.get("Mqtt", "password")])
+			except:
+				logger.debug("skipping mqtt table generation for username and password because at least one was missing.")
 			conn_str = "Connected"
 			if self.is_port_open(host=mqtt_host, port=int(mqtt_port)):
 				conn_str = "Unable to Connect"
@@ -270,7 +286,7 @@ class Boozer:
 
 		if tap_event_type == FlowMeter.POUR_FULL:
 			# we have detected that a full beer was poured
-			register_new_pour(tap_obj)
+			self.register_new_pour(tap_obj)
 		elif tap_event_type == FlowMeter.POUR_UPDATE:
 			# it was just a mid pour 
 			# TODO: Update scrollphat here
@@ -284,11 +300,13 @@ class Boozer:
 		"""
 		
 		pour_size = round(tap_obj.thisPour * tap_obj.PINTS_IN_A_LITER, 3)
-				# receord that pour into the database
+		total_pour_size = round(tap_obj.totalPour * tap_obj.PINTS_IN_A_LITER, 3)
+				# record that pour into the database
+		logger.info("POUR this pour was %s pints (thisPour=%s vs totalPour=%s" % (str(pour_size), str(tap_obj.thisPour), str(tap_obj.totalPour)))
 		
 		try:
-			self.db.update_tap(tap_obj.tap_id, pour_size) # record the pour in the db
-			logger.info("Database updated: %s %s " % (str(tap_obj.tap_id), str(pour_size)))
+			self.db.update_tap(tap_obj.tap_id, total_pour_size) # record the pour in the db
+			logger.info("Database updated: %s %s. " % (str(tap_obj.tap_id), str(total_pour_size)), )
 		except :
 			logger.error("unable to register new pour event to db")
 		
@@ -298,37 +316,48 @@ class Boozer:
 		volume_remaining = str(self.db.get_percentage(tap_obj.tap_id))
 
 		# is twitter enabled?
-		if self.TWITTER_ENABLED:
-			logger.info("Twitter is enabled. Preparing to send tweet.")
-			# calculate how much beer is left in the keg
-			# tweet of the record
-			msg = twitter.tweet_pour(tap_obj.tap_id,
-								tap_obj.getFormattedThisPour(),
-								tap_obj.getBeverage(),
-								volume_remaining,
-								temperature=get_temperature())  # TODO make temperature optional
-			logger.info("Tweet Sent: %s" % msg)
+		if self.TWITTER_ENABLED: # TODO FIX THIS
+			try:
+				logger.info("Twitter is enabled. Preparing to send tweet.")
+				# calculate how much beer is left in the keg
+				# tweet of the record
+				msg = self.twitter_client.tweet_pour(tap_obj.tap_id,
+									tap_obj.getFormattedThisPour(),
+									tap_obj.getBeverage(),
+									volume_remaining,
+									temperature=self.get_temperature())  # TODO make temperature optional
+				logger.info("Tweet Sent: %s" % msg)
+			except:
+				logger.error("ERROR unable to send tweet")
+				logger.error(sys.exc_info()[0])
 			#if SCROLLPHAT_ENABLED : scroll_once(msg)
 
-		if self.SLACK_ENABLED:
+		if self.SLACK_ENABLED: # TODO fix this
 			logger.info("Slack notifications are enabled. Preparing to send slack update.")
-			
+			try:
 			# tweet of the record
-			msg = slack.slack_pour(tap_obj.tap_id,
-								tap_obj.getFormattedThisPour(),
-								tap_obj.getBeverage(),
-								volume_remaining,
-								self.get_temperature())  # TODO make temperature optional
-			logger.info("Sent slack update: %s" % msg)
+				msg = slack_client.slack_pour(tap_obj.tap_id,
+									tap_obj.getFormattedThisPour(),
+									tap_obj.getBeverage(),
+									volume_remaining,
+									self.get_temperature())  # TODO make temperature optional
+
+				logger.info("Sent slack update: %s" % msg)
+			except:
+				logger.error("Error unable to send slack update.")
+				logger.error(sys.exc_info()[0])
+
 		# reset the counter
 		tap_obj.thisPour = 0.0
+		tap_obj.totalPour = 0.0
 		logger.info("reseting pour amount to 0.0")
 
 		# publish the updated value to mqtt broker
-		if config.getboolean("Mqtt", "enabled"): update_mqtt(tap_obj.tap_id)
+		if self.config.getboolean("Mqtt", "enabled"): self.update_mqtt(tap_obj.tap_id)
 
 		# display the pour in real time for debugging
-		if tap_obj.thisPour > 0.05: logger.debug("[POUR EVENT] " + str(tap_obj.tap_id) + ":" + str(tap_obj.thisPour))
+		#if tap_obj.thisPour > 0.05: logger.debug("[POUR EVENT] " + str(tap_obj.tap_id) + ":" + str(tap_obj.thisPour))
+		tap_obj.last_event_type = FlowMeter.POUR_RESET
 
 	def run(self):
 		# --- Begin old main
