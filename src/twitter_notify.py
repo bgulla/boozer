@@ -5,11 +5,11 @@ import sys
 import ConfigParser
 import logging
 """
-Boozer library to notify the general public of your driinking habits via Twitter.
+Boozer library to notify the general public of your drinking habits via Twitter.
 
 """
 # Setup Logging
-log = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 # Static vars
 DEGREES="°"
@@ -45,10 +45,10 @@ class TwitterNotify():
         try:
             self.post_tweet(msg)
         except:
-            log.error("unable to submit tweet")
+            logger.error("[Twitter] Unable to post status update: %s" % msg)
         return msg
 
-    def post_tweet(self,tweet):
+    def post_tweet(self,twitter_status_update):
         """
         Sends a string message to twitter to post.
 
@@ -58,15 +58,15 @@ class TwitterNotify():
         auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret)
         auth.set_access_token(self.access_token, self.access_token_secret)
         api = tweepy.API(auth)
-        log.debug("twitter logged in as: " + api.me().name)
+        logger.info("[Twitter] login successful for %s." % api.me().name)
 
         try:
             if len(tweet) <= 140:
-                api.update_status(tweet)
-                log.info("successfully tweeted " + tweet)
+                api.update_status(twitter_status_update)
+                logger.info("[Twitter] Successfully updated status to: %s" % twitter_status_update)
             else:
                 raise IOError
         except:
-            print "Something went wrong: either your tweet was too long or you didn't pass in a string argument at launch."
+            logger.error("[Twitter] Something went wrong: either your tweet was too long or you didn't pass in a string argument at launch.")
 
-        return
+        return twitter_status_update
