@@ -91,7 +91,7 @@ class BeerDB():
             c.execute(sql)
         conn.commit()
         conn.close()
-        print "Record: Tap %s Volume %s " % (tap_id, volume)
+        print "Record: Tap %s Volume %s Percentage: %s" % (tap_id, volume, str(self.get_percentage100(tap_id)))
 
 
     def get_tap(self, tap_id):
@@ -125,7 +125,7 @@ class BeerDB():
         :param volume:
         :return:
         """
-        old_volume = self.get_tap(tap_id, capacity_in_gallons)
+        old_volume = self.get_tap(tap_id)
         new_volume = old_volume + volume
         self.set_tap(tap_id, new_volume)
 
@@ -139,3 +139,12 @@ class BeerDB():
         """
         self.set_tap(tap_id, 0)
         print "Reset Tap ", tap_id
+
+
+def main():
+    db = BeerDB()
+    db.update_tap(1,1.1234)
+    print db.get_percentage(1,5)
+
+if __name__ == '__main__':
+    main()

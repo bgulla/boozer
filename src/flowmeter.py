@@ -96,6 +96,9 @@ class FlowMeter():
 		"""
 		return self.pin
 
+	def get_gallon_capacity(self):
+		return self.capacity
+
 	def set_previous_pour(self, vol):
 		"""
 		Updates the last pour event's volume.

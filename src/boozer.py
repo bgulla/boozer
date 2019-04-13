@@ -343,8 +343,7 @@ class Boozer:
 			logger.debug("flowmeter.POUR_UPDATE")
 			#print "brandon do something like update the scrollphat display or do nothing. it's cool"
 
-	def notify_twitter(self, tap_obj):
-		logger.debug("this is a notify_twitter()")
+	def tweet_new_pour(self, tap_obj):
 		volume_remaining = str(self.db.get_percentage(tap_obj.tap_id))
 
 		try:
@@ -373,7 +372,7 @@ class Boozer:
 		logger.info("POUR this pour was %s pints (thisPour=%s vs totalPour=%s" % (str(pour_size), str(tap_obj.thisPour), str(tap_obj.totalPour)))
 		
 		try:
-			self.db.update_tap(tap_obj.tap_id, total_pour_size, capacity=tap_obj.capacity) # record the pour in the db
+			self.db.update_tap(tap_obj.tap_id, total_pour_size, capacity=tap_obj.get_gallon_capacity()) # record the pour in the db
 			logger.info("Database updated: %s %s. " % (str(tap_obj.tap_id), str(total_pour_size)), )
 		except :
 			logger.error("unable to register new pour event to db")
@@ -384,8 +383,8 @@ class Boozer:
 		volume_remaining = str(self.db.get_percentage(tap_obj.tap_id))
 
 		# is twitter enabled?
-		if self.TWITTER_ENABLED: # TODO FIX THIS
-			notify_twitter(tap_obj)
+		if self.TWITTER_ENABLED: 
+			self.tweet_new_pour(tap_obj)
 			
 			#if SCROLLPHAT_ENABLED : scroll_once(msg)
 
