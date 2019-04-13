@@ -15,38 +15,22 @@ logger = logging.getLogger(__name__)
 DEGREES="°"
 
 class TwitterNotify():
-    def __init__(self, config_obj):
+
+    consumer_key        = None
+    consumer_secret     = None
+    access_token        = None
+    access_token_secret = None
+
+    def __init__(self, consumer_key, consumer_secret, access_token, access_token_secret):
         """
         Initializes the Twitter client library.
 
         :param config_obj: SimpleConfig object used to pull the auth creds.
         """
-        self.consumer_key = config_obj.get("Twitter", "consumer_key").strip('"')
-        self.consumer_secret = config_obj.get("Twitter", "consumer_secret").strip('"')
-        self.access_token = config_obj.get("Twitter", "access_token").strip('"')
-        self.access_token_secret = config_obj.get("Twitter", "access_token_secret").strip('"')
-
-    def tweet_pour(self, tap_id, volume_poured, beverage_name, volume_remaining, temperature):
-        """
-        Composes the tweet message and passes it to the function that actually connects to twitter and tweets.
-
-        :param tap_id: tap ID number
-        :param volume_poured: float
-        :param beverage_name: string
-        :param volume_remaining: float
-        :param temperature: float
-        :return: nothing
-        """
-        msg = "I just poured " + volume_poured + " from tap " + str(tap_id) + " (" + volume_remaining + "% remaining) "
-        if temperature is not None:
-            msg = msg + "at " + str(temperature) + DEGREES + "."
-        else:
-            msg = msg + "."
-        try:
-            self.post_tweet(msg)
-        except:
-            logger.error("[Twitter] Unable to post status update: %s" % msg)
-        return msg
+        self.consumer_key       = consumer_key
+        self.consumer_secret    = consumer_secret
+        self.access_token       = access_token
+        self.access_token_secret = access_token_secret
 
     def post_tweet(self,twitter_status_update):
         """
@@ -58,15 +42,42 @@ class TwitterNotify():
         auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret)
         auth.set_access_token(self.access_token, self.access_token_secret)
         api = tweepy.API(auth)
-        logger.info("[Twitter] login successful for %s." % api.me().name)
 
+
+        logger.info("[Twitter] login successful for %s." % api.me().name)
+        logger.info("[Twitter] Attempting to send: %s" % twitter_status_update)
         try:
-            if len(tweet) <= 140:
+            if len(twitter_status_update) <= 140:
                 api.update_status(twitter_status_update)
                 logger.info("[Twitter] Successfully updated status to: %s" % twitter_status_update)
             else:
                 raise IOError
         except:
             logger.error("[Twitter] Something went wrong: either your tweet was too long or you didn't pass in a string argument at launch.")
+            logger.error(sys.exc_info()[0])
 
         return twitter_status_update
+
+def main():
+    logger = logging.getLogger()
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter(
+        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
+
+    config = ConfigParser.ConfigParser()
+    config.read('./config.ini')
+
+    consumer_key = config.get("Twitter", "consumer_key").strip('"')
+    consumer_secret = config.get("Twitter", "consumer_secret").strip('"')
+    access_token = config.get("Twitter", "access_token").strip('"')
+    access_token_secret = config.get("Twitter", "access_token_secret").strip('"')
+
+    client = TwitterNotify(consumer_key, consumer_secret, access_token, access_token_secret)
+    client.post_tweet("Test of the twitter_notify.py main method.")
+
+if __name__ == "__main__":
+    main()

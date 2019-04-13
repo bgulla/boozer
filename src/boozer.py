@@ -74,7 +74,14 @@ class Boozer:
 		try:
 			if self.config.getboolean("Twitter", "enabled"):
 				self.TWITTER_ENABLED = True
-				self.twitter_client = twitter_notify.TwitterNotify(self.config)
+				try:
+					consumer_key = self.config.get("Twitter", "consumer_key").strip('"')
+			        consumer_secret = self.config.get("Twitter", "consumer_secret").strip('"')
+			        access_token = self.config.get("Twitter", "access_token").strip('"')
+			        access_token_secret = self.config.get("Twitter", "access_token_secret").strip('"')
+		    	except:
+		    		logger.error("Unable to pull twitter credentials from configuration file.")
+    			self.twitter_client = twitter_notify.TwitterNotify(self.config)
 		except: 
 			logger.info("Twitter Entry not found in %s, setting TWITTER_ENABLED to False", sys.exc_info()[0] )
 			self.TWITTER_ENABLED = False
@@ -221,7 +228,7 @@ class Boozer:
 			mqtt_table.add_row(['port', str(mqtt_port)])
 			try:
 				mqtt_table.add_row(['username', self.config.get("Mqtt", "username")])
-				mqtt_table.add_row(['username', self.config.get("Mqtt", "password")])
+				mqtt_table.add_row(['password', self.config.get("Mqtt", "password")])
 			except:
 				logger.debug("skipping mqtt table generation for username and password because at least one was missing.")
 			conn_str = "Connected"
@@ -293,7 +300,25 @@ class Boozer:
 			logger.debug("flowmeter.POUR_UPDATE")
 			#print "brandon do something like update the scrollphat display or do nothing. it's cool"
 
+	def notify_twitter(self, tap_obj):
+		logger.debug("this is a notify_twitter()")
+		volume_remaining = str(self.db.get_percentage(tap_obj.tap_id))
 
+		try:
+			logger.info("Twitter is enabled. Preparing to send tweet.")
+			# calculate how much beer is left in the keg
+			# tweet of the record
+			msg = "I just poured " + volume_poured + " from tap " + str(tap_id) + " (" + volume_remaining + "% remaining) "
+	        if temperature is not None:
+	            msg = msg + "at " + str(temperature) + DEGREES + "."
+	        else:
+	            msg = msg + "."
+
+	            self.twitter_client.post_tweet(msg)
+				logger.info("Tweet Sent: %s" % msg)
+		except:
+			logger.error("ERROR unable to send tweet")
+			logger.error(sys.exc_info()[0])
 
 	def register_new_pour(self, tap_obj):
 		"""
@@ -317,19 +342,8 @@ class Boozer:
 
 		# is twitter enabled?
 		if self.TWITTER_ENABLED: # TODO FIX THIS
-			try:
-				logger.info("Twitter is enabled. Preparing to send tweet.")
-				# calculate how much beer is left in the keg
-				# tweet of the record
-				msg = self.twitter_client.tweet_pour(tap_obj.tap_id,
-									tap_obj.getFormattedThisPour(),
-									tap_obj.getBeverage(),
-									volume_remaining,
-									temperature=self.get_temperature())  # TODO make temperature optional
-				logger.info("Tweet Sent: %s" % msg)
-			except:
-				logger.error("ERROR unable to send tweet")
-				logger.error(sys.exc_info()[0])
+			notify_twitter(tap_obj)
+			
 			#if SCROLLPHAT_ENABLED : scroll_once(msg)
 
 		if self.SLACK_ENABLED: # TODO fix this
