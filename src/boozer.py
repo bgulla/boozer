@@ -136,7 +136,14 @@ class Boozer:
 				self.slack_client = slack_notify.SlackNotify(self.config)
 		except: 
 			logger.info("Slack Entry not found in %s, setting SLACK_ENABLED to False")
-			self.TEMPERATURE_ENABLED = False
+			self.SLACK_ENABLED = False
+
+		try:
+			if self.config.getboolean("Twitter", "enabled"):
+				self.TWITTER_ENABLED = True
+		except: 
+			logger.info("Twitter Entry not found in %s, setting TWITTER_ENABLED to False")
+			self.TWITTER_ENABLED = False
 
 		# Boozer overrides
 		minimum_pour_vol = None
@@ -282,7 +289,7 @@ class Boozer:
 
 		:return: string
 		"""
-		if not TEMPERATURE_ENABLED:
+		if not self.TEMPERATURE_ENABLED:
 			return None
 
 		try:

@@ -118,14 +118,14 @@ class BeerDB():
         print "print_all_taps() is deprecated."
 
 
-    def update_tap(self, tap_id, volume):
+    def update_tap(self, tap_id, volume, capacity_in_gallons=5):
         """
 
         :param tap_id:
         :param volume:
         :return:
         """
-        old_volume = self.get_tap(tap_id)
+        old_volume = self.get_tap(tap_id, capacity_in_gallons)
         new_volume = old_volume + volume
         self.set_tap(tap_id, new_volume)
 
