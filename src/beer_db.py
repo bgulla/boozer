@@ -38,15 +38,14 @@ class BeerDB():
         log.info("Table created: " + self.DB_FILEPATH)
 
 
-    def get_percentage(self, tap_id):
+    def get_percentage(self, tap_id, capacity_in_gallons=5):
         """
 
         :param tap_id:
         :return:
         """
         PINTS_PER_GALLON = 8
-        GALLONS = 5
-        TOTAL_VOLUME = PINTS_PER_GALLON * GALLONS
+        TOTAL_VOLUME = PINTS_PER_GALLON * capacity_in_gallons
         volume_expelled = self.get_tap(tap_id)
         n = volume_expelled / TOTAL_VOLUME
         return 1 - n
@@ -116,8 +115,7 @@ class BeerDB():
 
         :return:
         """
-        for x in range(1, 5):
-            print "Tap: ", x, self.get_tap(x)
+        print "print_all_taps() is deprecated."
 
 
     def update_tap(self, tap_id, volume):

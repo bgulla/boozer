@@ -78,7 +78,7 @@ class FlowMeter():
         self.enabled = True
         self.tap_id = tap_id
         self.pin = pin
-        self.capacity = 5
+        self.capacity = capacity
         self.config = config # TODO: find a way to pull this out and make it decoupled from the config object
         self.STANDALONE_MODE = STANDALONE_MODE
 

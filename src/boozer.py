@@ -61,9 +61,6 @@ class Boozer:
 		logger.setLevel(logging.DEBUG)
 		logger.setLevel(logging.INFO)
 
-
-
-
 		current_path = os.path.dirname(os.path.realpath(__file__))
 		if not os.path.isfile(self.DB_FILEPATH):
 			logger.fatal("[fatal] cannot load db from " % self.DB_FILEPATH)
@@ -161,19 +158,19 @@ class Boozer:
 			str_tapN_gpio_pin = "%s_gpio_pin" % str_tap
 			str_tapN_beer_name = "%s_beer_name" % str_tap
 			str_tapN_reset_database = "%s_reset_database" % str_tap
-			capacty_gallons = 5 # default is 5 gallons
+			capacity_gallons = 5 # default is 5 gallons
 
 			# see if the user set the capacity
 			try:
-				capacty_gallons = self.config.getint("Taps", str_tapN_gallon_capacity)
-				logger.info("Tap %i Config Override: Setting capaticty to %i" % (tap, capacty_gallons))
+				capacity_gallons = self.config.getint("Taps", str_tapN_gallon_capacity)
+				logger.info("Tap %i Config Override: Setting capacity to %i" % (tap, capacity_gallons))
 			except:
-				logger.info("Tap %i: Setting capaticty to %i" % (tap, capacty_gallons))
+				logger.info("Tap %i: Setting capacity to %i" % (tap, capacity_gallons))
 
 			try:
 				this_tap_gpio_pin = self.config.getint("Taps", str_tapN_gpio_pin) # this looks for the tap gpio pin such as "tap1_gpio_pin"
 				this_tap_beer_name = [self.config.get("Taps", str_tapN_beer_name)]
-				new_tap = FlowMeter("not metric", this_tap_beer_name, tap_id=tap, pin=this_tap_gpio_pin, config=self.config, capacity=capacty_gallons, minimum_pour_vol=minimum_pour_vol) # Create the tap object
+				new_tap = FlowMeter("not metric", this_tap_beer_name, tap_id=tap, pin=this_tap_gpio_pin, config=self.config, capacity=capacity_gallons, minimum_pour_vol=minimum_pour_vol) # Create the tap object
 				self.taps.append(new_tap) # Add the new tap object to the array
 			except:
 				break
@@ -369,7 +366,7 @@ class Boozer:
 		logger.info("POUR this pour was %s pints (thisPour=%s vs totalPour=%s" % (str(pour_size), str(tap_obj.thisPour), str(tap_obj.totalPour)))
 		
 		try:
-			self.db.update_tap(tap_obj.tap_id, total_pour_size) # record the pour in the db
+			self.db.update_tap(tap_obj.tap_id, total_pour_size, capacity=tap_obj.capacity) # record the pour in the db
 			logger.info("Database updated: %s %s. " % (str(tap_obj.tap_id), str(total_pour_size)), )
 		except :
 			logger.error("unable to register new pour event to db")
