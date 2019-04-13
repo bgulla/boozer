@@ -76,12 +76,12 @@ class Boozer:
 				self.TWITTER_ENABLED = True
 				try:
 					consumer_key = self.config.get("Twitter", "consumer_key").strip('"')
-			        consumer_secret = self.config.get("Twitter", "consumer_secret").strip('"')
-			        access_token = self.config.get("Twitter", "access_token").strip('"')
-			        access_token_secret = self.config.get("Twitter", "access_token_secret").strip('"')
-		    	except:
-		    		logger.error("Unable to pull twitter credentials from configuration file.")
-    			self.twitter_client = twitter_notify.TwitterNotify(self.config)
+					consumer_secret = self.config.get("Twitter", "consumer_secret").strip('"')
+					access_token = self.config.get("Twitter", "access_token").strip('"')
+					access_token_secret = self.config.get("Twitter", "access_token_secret").strip('"')
+				except:
+					logger.error("Unable to pull twitter credentials from configuration file.")
+				self.twitter_client = twitter_notify.TwitterNotify(self.config)
 		except: 
 			logger.info("Twitter Entry not found in %s, setting TWITTER_ENABLED to False", sys.exc_info()[0] )
 			self.TWITTER_ENABLED = False
@@ -123,18 +123,39 @@ class Boozer:
 			logger.info("Slack Entry not found in %s, setting SLACK_ENABLED to False")
 			self.TEMPERATURE_ENABLED = False
 
+		# Boozer overrides
+		minimum_pour_vol = None
+		try:
+			self.config.get("Boozer", FlowMeter.MINIMUM_POUR_VOL_LBL)
+		except:
+			logger.debug("%s not set" % FlowMeter.MINIMUM_POUR_VOL_LBL)
+
 		# set up the flow meters
-		  
+		#  _
+		#| |_ __ _ _ __  ___
+		#| __/ _` | '_ \/ __|
+		#| || (_| | |_) \__ \
+		# \__\__,_| .__/|___/
+		#         |_|
+
 		for tap in range(1,10): # limit of 10 taps
 			str_tap = "tap%i" % tap 
 			str_tapN_gpio_pin = "%s_gpio_pin" % str_tap
 			str_tapN_beer_name = "%s_beer_name" % str_tap
 			str_tapN_reset_database = "%s_reset_database" % str_tap
+			capacty_gallons = 5 # default is 5 gallons
+
+			# see if the user set the capacity
+			try:
+				capacty_gallons = self.config.getint("Taps", str_tapN_gallon_capacity)
+				logger.info("Tap %i Config Override: Setting capaticty to %i" % (tap, capacty_gallons))
+			except:
+				logger.info("Tap %i: Setting capaticty to %i" % (tap, capacty_gallons))
 
 			try:
 				this_tap_gpio_pin = self.config.getint("Taps", str_tapN_gpio_pin) # this looks for the tap gpio pin such as "tap1_gpio_pin"
 				this_tap_beer_name = [self.config.get("Taps", str_tapN_beer_name)]
-				new_tap = FlowMeter("not metric", this_tap_beer_name, tap_id=tap, pin=this_tap_gpio_pin, config=self.config) # Create the tap object
+				new_tap = FlowMeter("not metric", this_tap_beer_name, tap_id=tap, pin=this_tap_gpio_pin, config=self.config, capacity=capacty_gallons, minimum_pour_vol=minimum_pour_vol) # Create the tap object
 				self.taps.append(new_tap) # Add the new tap object to the array
 			except:
 				break
@@ -215,9 +236,9 @@ class Boozer:
 		t.add_row(['Slack', self.get_enabled_string(self.SLACK_ENABLED)])
 		print t
 
-		taps_table = PrettyTable(['Tap','Beer','GPIO Pin', 'Volume Remaining'])
+		taps_table = PrettyTable(['Tap','Beer','Capacity (Gallons)','GPIO Pin', 'Volume Remaining'])
 		for tap in self.taps:
-			taps_table.add_row([str(tap.get_tap_id()), str(tap.get_beverage_name()[0]), str(tap.get_pin()), str(self.db.get_percentage100(tap.get_tap_id()))])
+			taps_table.add_row([str(tap.get_tap_id()), str(tap.get_beverage_name()[0]), str(tap.capacity), str(tap.get_pin()), str(self.db.get_percentage100(tap.get_tap_id()))])
 		print taps_table
 
 		if self.MQTT_ENABLED == True:    
@@ -309,12 +330,12 @@ class Boozer:
 			# calculate how much beer is left in the keg
 			# tweet of the record
 			msg = "I just poured " + volume_poured + " from tap " + str(tap_id) + " (" + volume_remaining + "% remaining) "
-	        if temperature is not None:
-	            msg = msg + "at " + str(temperature) + DEGREES + "."
-	        else:
-	            msg = msg + "."
+			if temperature is not None:
+				msg = msg + "at " + str(temperature) + DEGREES + "."
+			else:
+				msg = msg + "."
 
-	            self.twitter_client.post_tweet(msg)
+				self.twitter_client.post_tweet(msg)
 				logger.info("Tweet Sent: %s" % msg)
 		except:
 			logger.error("ERROR unable to send tweet")

@@ -2,14 +2,12 @@
 filepath: ../db/db.sqlite
 
 [Taps]
-tap1_gpio_pin: 24
-tap2_gpio_pin: 26 
-tap3_gpio_pin: 12 
-tap4_gpio_pin: 13
 tap1_beer_name: Bud Light
+tap1_gpio_pin: 24
+tap1_gallon_capacity: 5
 tap2_beer_name: Seltzer Water
-tap3_beer_name: Sweet Baby Jesus
-tap4_beer_name: disabled
+tap2_gpio_pin: 26 
+tap2_gallon_capacity: 10
 
 [Temperature]
 enabled: True
