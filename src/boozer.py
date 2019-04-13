@@ -62,6 +62,8 @@ class Boozer:
 		logger.setLevel(logging.INFO)
 
 
+
+
 		current_path = os.path.dirname(os.path.realpath(__file__))
 		if not os.path.isfile(self.DB_FILEPATH):
 			logger.fatal("[fatal] cannot load db from " % self.DB_FILEPATH)
@@ -85,6 +87,22 @@ class Boozer:
 		except: 
 			logger.info("Twitter Entry not found in %s, setting TWITTER_ENABLED to False", sys.exc_info()[0] )
 			self.TWITTER_ENABLED = False
+
+
+		# Check to see if we need to override the logging level
+		try:
+			level = self.config.get("Boozer", "logging_level")
+			if level == "INFO" or level == "info":
+				logger.setLevel(logging.INFO)
+			if level == "WARN" or level == "warn":
+				logger.setLevel(logging.WARN)
+			if level == "DEBUG" or level == "debug":
+				logger.setLevel(logging.DEBUG)
+			if level == "ERROR" or level == "error":
+				logger.setLevel(logging.ERROR)
+		except:
+			logger.debug("not overrding the logging level")
+
 
 		# setup mqtt client
 		try:

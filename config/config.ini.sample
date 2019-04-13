@@ -1,3 +1,7 @@
+[Boozer]		# Optional
+minimum_pour_vol: 0.5	# Optional: sets the threshold for a pour to be considered a 'full' pour and trigger the notification events
+logging_level: INFO	# Optional
+
 [Database]
 filepath: ../db/db.sqlite
 
