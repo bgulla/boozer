@@ -108,6 +108,9 @@ class FlowMeter():
 		"""
 		self.previous_pour = vol
 
+	def get_previous_pour(self):
+		return self.previous_pour
+
 	def update(self, currentTime=int(time.time() * MS_IN_A_SECOND)):
 		"""
 		Sets a timestamp of the last pour event.

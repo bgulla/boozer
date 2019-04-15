@@ -6,7 +6,6 @@ import pyfiglet
 import time
 import math
 import logging
-#import scrollphat
 # import RPi.GPIO as GPIO
 from flowmeter import *
 import beer_db
@@ -23,6 +22,7 @@ import os
 import sys
 import socket
 from contextlib import closing
+import boozer_display
 
 # --=== Begin Rewrite
 class Boozer:
@@ -40,6 +40,7 @@ class Boozer:
 	taps = []
 	mqtt_client = None
 	twitter_client = None
+	boozer_display = None
 	slack_client = None
 
 	def __init__(self):
@@ -137,6 +138,15 @@ class Boozer:
 		except: 
 			logger.info("Slack Entry not found in %s, setting SLACK_ENABLED to False")
 			self.SLACK_ENABLED = False
+
+		# setup slack client
+		try:
+			if self.config.getboolean("Scrollphat", "enabled"):
+				self.SCROLLPHAT_ENABLED = True
+				self.boozer_display = boozer_display.BoozerDisplay()
+		except: 
+			logger.info("Scrollphat Entry not found in %s, setting SCROLLPHAT_ENABLED to False")
+			self.SCROLLPHAT_ENABLED = False
 
 		try:
 			if self.config.getboolean("Twitter", "enabled"):
@@ -256,6 +266,7 @@ class Boozer:
 		t.add_row(['Mqtt', self.get_enabled_string(self.MQTT_ENABLED)])
 		t.add_row(['Temperature', self.get_enabled_string(self.TEMPERATURE_ENABLED)])
 		t.add_row(['Slack', self.get_enabled_string(self.SLACK_ENABLED)])
+		t.add_row(['Scrollphat', self.get_enabled_string(self.SCROLLPHAT_ENABLED)])
 		print t
 
 		taps_table = PrettyTable(['Tap','Beer','Capacity (Gallons)','GPIO Pin', 'Volume Remaining'])
@@ -305,21 +316,6 @@ class Boozer:
 	def record_pour(self, tap_id, pour):
 		self.db.update_tap(tap_id, pour)
 
-	def update_display(self, msg):
-		if SCROLLPHAT_ENABLED:
-			self.update_scrollphat(msg)
-			
-	def update_scrollphat(self, msg):
-		scrollphat.write_string(msg, 11)
-		length = scrollphat.buffer_len()
-
-		for i in range(length):
-			try:
-				scrollphat.scroll()
-				time.sleep(0.1)
-			except KeyboardInterrupt:
-				scrollphat.clear()
-
 	def register_tap(self, tap_obj):
 		"""
 
@@ -338,6 +334,18 @@ class Boozer:
 			# we have detected that a full beer was poured
 			self.register_new_pour(tap_obj)
 		elif tap_event_type == FlowMeter.POUR_UPDATE:
+			if self.SCROLLPHAT_ENABLED:
+				try:
+
+					current_pour = str(round(tap_obj.get_previous_pour(),2))
+					# okay, i know this looks weird but since the scrollphat can only 
+					# display a few chars, I hacked off the 0.
+					first_digit = current_pour[0]
+					if first_digit == 0:
+						current_pour = current_pour[1:]
+					self.boozer_display.set_display(current_pour)
+				except:
+					logger.error("SCROLLPHAT: unable to update the display with the mid-pour volume amt")
 			# it was just a mid pour 
 			# TODO: Update scrollphat here
 			logger.debug("flowmeter.POUR_UPDATE")
