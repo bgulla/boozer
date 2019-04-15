@@ -133,7 +133,7 @@ class Boozer:
 		try:
 			if self.config.getboolean("Slack", "enabled"):
 				self.SLACK_ENABLED = True
-				self.slack_client = slack_notify.SlackNotify(self.config)
+				self.slack_client = slack_notify.SlackNotify(self.config.get("Slack", "webhookurl"))
 		except: 
 			logger.info("Slack Entry not found in %s, setting SLACK_ENABLED to False")
 			self.SLACK_ENABLED = False
@@ -342,6 +342,18 @@ class Boozer:
 			# TODO: Update scrollphat here
 			logger.debug("flowmeter.POUR_UPDATE")
 			#print "brandon do something like update the scrollphat display or do nothing. it's cool"
+	
+	def get_pour_announcement(tap_obj):
+
+		volume_remaining = str(self.db.get_percentage(tap_obj.tap_id))
+
+		msg = "I just poured " + volume_poured + " from tap " + str(tap_id) + " (" + volume_remaining + "% remaining) "
+		if temperature is not None:
+			msg = msg + "at " + str(temperature) + DEGREES + "."
+		else:
+			msg = msg + "."
+		return msg
+
 
 	def tweet_new_pour(self, tap_obj):
 		volume_remaining = str(self.db.get_percentage(tap_obj.tap_id))
@@ -350,14 +362,8 @@ class Boozer:
 			logger.info("Twitter is enabled. Preparing to send tweet.")
 			# calculate how much beer is left in the keg
 			# tweet of the record
-			msg = "I just poured " + volume_poured + " from tap " + str(tap_id) + " (" + volume_remaining + "% remaining) "
-			if temperature is not None:
-				msg = msg + "at " + str(temperature) + DEGREES + "."
-			else:
-				msg = msg + "."
-
-				self.twitter_client.post_tweet(msg)
-				logger.info("Tweet Sent: %s" % msg)
+			self.twitter_client.post_tweet(msg)
+			logger.info("Tweet Sent: %s" % msg)
 		except:
 			logger.error("ERROR unable to send tweet")
 			logger.error(sys.exc_info()[0])
@@ -382,34 +388,19 @@ class Boozer:
 		#volume_remaining = str(round(db.get_percentage(tap_obj.tap_id), 3) * 100)
 		volume_remaining = str(self.db.get_percentage(tap_obj.tap_id))
 
-		# is twitter enabled?
+		# Notification Agents
 		if self.TWITTER_ENABLED: 
-			self.tweet_new_pour(tap_obj)
-			
-			#if SCROLLPHAT_ENABLED : scroll_once(msg)
-
-		if self.SLACK_ENABLED: # TODO fix this
-			logger.info("Slack notifications are enabled. Preparing to send slack update.")
-			try:
-			# tweet of the record
-				msg = slack_client.slack_pour(tap_obj.tap_id,
-									tap_obj.getFormattedThisPour(),
-									tap_obj.getBeverage(),
-									volume_remaining,
-									self.get_temperature())  # TODO make temperature optional
-
-				logger.info("Sent slack update: %s" % msg)
-			except:
-				logger.error("Error unable to send slack update.")
-				logger.error(sys.exc_info()[0])
-
+			self.tweet_new_pour(get_pour_announcement(tap_obj))
+		if self.SLACK_ENABLED:
+			self.slack_client.post_slack_msg(get_pour_announcement(tap_obj))
+		# publish the updated value to mqtt broker
+		if self.config.getboolean("Mqtt", "enabled"): 
+			self.update_mqtt(tap_obj.tap_id)
 		# reset the counter
+		
+		logger.info("Pour processing complete. Reseting pour of tap %i amount to 0.0" % tap_obj.get_tap_id())
 		tap_obj.thisPour = 0.0
 		tap_obj.totalPour = 0.0
-		logger.info("reseting pour amount to 0.0")
-
-		# publish the updated value to mqtt broker
-		if self.config.getboolean("Mqtt", "enabled"): self.update_mqtt(tap_obj.tap_id)
 
 		# display the pour in real time for debugging
 		#if tap_obj.thisPour > 0.05: logger.debug("[POUR EVENT] " + str(tap_obj.tap_id) + ":" + str(tap_obj.thisPour))
