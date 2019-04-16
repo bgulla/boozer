@@ -24,6 +24,7 @@ import sys
 import socket
 from contextlib import closing
 import boozer_display
+import influxdb_client
 
 # --=== Begin Rewrite
 class Boozer:
@@ -33,6 +34,7 @@ class Boozer:
 	CONFIG_FILEPATH = "./config.ini"
 	DB_FILEPATH = "./db.sqlite"
 	MQTT_ENABLED = False
+	INFLUXDB_ENABLED = False
 	TWITTER_ENABLED = False
 	SCROLLPHAT_ENABLED = False
 	SLACK_ENABLED = False
@@ -44,6 +46,7 @@ class Boozer:
 	boozer_display = None
 	slack_client = None
 	temperature_client = None
+	INFLUXDB_LBL = "Influxdb"
 
 	def __init__(self):
 		# Setup the configuration
@@ -122,6 +125,41 @@ class Boozer:
 		except: 
 			logger.info("MQTT Entry not found in %s, setting MQTT_ENABLED to False" % self.CONFIG_FILEPATH)
 			self.MQTT_ENABLED = False
+
+		# INFLUXDB plugin
+		try:
+			if self.config.getboolean(self.INFLUXDB_LBL, "enabled"):
+				logger.info("config: INFLUXDB enabled")
+				self.INFLUXDB_ENABLED = True
+
+				# Read in username and password
+				username = None
+				host = None
+				password = None
+				database = None
+				port = 8086
+				database = "boozer"
+
+				try: # read in the mandatory values
+					host = self.config.get(self.INFLUXDB_LBL, "host")
+				except:
+					logger.error("config error. unable to get host from %s." % self.INFLUXDB_LBL)
+					self.INFLUXDB_ENABLED = False
+					return
+				
+				try: # read in optional values, if they don't exist, that's fine. continue.
+					port = self.config.getint(self.INFLUXDB_LBL, "port")
+					username = self.config.get(self.INFLUXDB_LBL, "username")
+					password = self.config.get(self.INFLUXDB_LBL, "password")
+					database = self.config.get(self.INFLUXDB_LBL, "database")
+				except: 
+					logger.debug("missing an optional key in influx config. moving on.")
+				
+				self.influxdb_client = influxdb_client.InfluxdbBoozerClient(host=host, port=port, username=username, password=password, database=database)
+				logger.info("influxdb component initialized")
+		except: 
+			logger.info("%s Entry not found in %s, setting MQTT_ENABLED to False" % (self.INFLUXDB_LBL, self.CONFIG_FILEPATH))
+			self.INFLUXDB_ENABLED = False
 
 		# setup temperature client
 		try:
@@ -293,7 +331,17 @@ class Boozer:
 			taps_table.add_row([str(tap.get_tap_id()), str(tap.get_beverage_name()[0]), str(tap.capacity), str(tap.get_pin()), str(self.db.get_percentage100(tap.get_tap_id()))])
 		print taps_table
 
-		if self.MQTT_ENABLED == True:    
+		if self.INFLUXDB_ENABLED:
+			influx_table = PrettyTable(['Key','Value'])
+			influx_table.add_row(['influxdb','enabled'])
+			influx_table.add_row(['database', str(self.influxdb_client.database)])
+			influx_table.add_row(['host', str(self.influxdb_client.host)])
+			influx_table.add_row(['port', str(self.influxdb_client.port)])
+			influx_table.add_row(['username', str(self.influxdb_client.username)])
+			influx_table.add_row(['password', str(self.influxdb_client.password)])
+			print influx_table
+
+		if self.MQTT_ENABLED == True:
 			mqtt_host = self.config.get("Mqtt", "broker")
 			mqtt_port = self.config.get("Mqtt", "port")
 			mqtt_table = PrettyTable(['MQTT-Key','MQTT-Value'])
@@ -342,8 +390,6 @@ class Boozer:
 		"""
 		currentTime = int(time.time() * FlowMeter.MS_IN_A_SECOND)
 		tap_obj.update(currentTime)
-
-
 
 	def register_pour_event(self, tap_obj ):
 		tap_event_type = tap_obj.last_event_type
@@ -428,11 +474,12 @@ class Boozer:
 		tap_obj.thisPour = 0.0
 		tap_obj.totalPour = 0.0
 
-		# display the pour in real time for debugging
-		#if tap_obj.thisPour > 0.05: logger.debug("[POUR EVENT] " + str(tap_obj.tap_id) + ":" + str(tap_obj.thisPour))
+		# reset the pour event flag
 		tap_obj.last_event_type = FlowMeter.POUR_RESET
 
 	def run(self):
+
+		# TODO: save initial timestamp
 		# --- Begin old main
 		self.print_config()
 		logger.info("Boozer Intialized! Waiting for pours. Drink up, be merry!")
