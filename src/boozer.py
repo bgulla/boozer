@@ -8,6 +8,7 @@ import math
 import logging
 # import RPi.GPIO as GPIO
 from flowmeter import *
+import beer_temps
 import beer_db
 import twitter_notify
 import slack_notify
@@ -42,6 +43,7 @@ class Boozer:
 	twitter_client = None
 	boozer_display = None
 	slack_client = None
+	temperature_client = None
 
 	def __init__(self):
 		# Setup the configuration
@@ -121,11 +123,32 @@ class Boozer:
 			logger.info("MQTT Entry not found in %s, setting MQTT_ENABLED to False" % self.CONFIG_FILEPATH)
 			self.MQTT_ENABLED = False
 
-		# setup temperaturesensor client
+		# setup temperature client
 		try:
-			if self.config.getboolean("Temperature", "enabled"):
-				self.TEMPERATURE_ENABLED = True
-				temperature_url = self.config.get("Temperature", "endpoint")
+			try:
+				if self.config.getboolean("Temperature", "enabled"):
+					self.TEMPERATURE_ENABLED = True
+					try:
+						sensor_url = self.config.get("Temperature", "endpoint")
+						logger.info("Temperature. setting up endpoint based temp client")
+						self.temperature_client = beer_temps.BeerTemps(sensor_protocol=beer_temps.SENSOR_HTTP, sensor_url=sensor_url)
+
+						logger.warn("Temperature endpoint is deprecated. use url instead.")
+					except: 
+						temperature_url = None
+
+					sensor_protocol = self.config.get("Temperature", "sensor_protocol")
+
+					if sensor_protocol == beer_temps.SENSOR_DS18B20:
+						logger.info("setting up ds18b20 sensor ")
+						self.temperature_client = beer_temps.BeerTemps(sensor_protocol="ds18b20")
+					elif sensor_protocol == beer_temps.SENSOR_HTTP:
+						sensor_url = self.config.get("Temperature", "sensor_url")
+						self.temperature_client = beer_temps.BeerTemps(sensor_protocol=beer_temps.SENSOR_HTTP, sensor_url=sensor_url)
+			except: 
+				logger.error("Configuration error setting up temperature sensor.")
+				logger.error(sys.exc_info()[0])
+			logger.info("TEMPERATURE_ENABLED = True")
 		except: 
 			logger.info("Temperature Entry not found in %s, setting TEMPERATURE_ENABLED to False")
 			self.TEMPERATURE_ENABLED = False
@@ -213,10 +236,6 @@ class Boozer:
 			GPIO.add_event_detect(tap.get_pin(), GPIO.RISING, callback=lambda *a: self.register_tap(tap), bouncetime=20)
 			#if MQTT_ENABLED: update_mqtt(tap.get_tap_id()) # do a prelim mqtt update in case it's been awhile
 
-		# Initial info
-		if self.TEMPERATURE_ENABLED:
-			logger.info("Temperature: " + self.get_temperature())
-
 		zope.event.subscribers.append(self.register_pour_event) # Attach the event
 
 	def update_mqtt(self, tap_id):
@@ -292,6 +311,15 @@ class Boozer:
 
 			print mqtt_table
 
+		if self.TEMPERATURE_ENABLED == True:
+			temperature_table = PrettyTable(['Sensor','Temperature'])
+			t = self.get_temperature_str()
+			temperature_table.add_row(['temperature',self.get_temperature_str()])
+			print temperature_table
+
+	def get_temperature_str(self):
+		return str(self.get_temperature()) + beer_temps.DEGREES		
+
 
 	def get_temperature(self):
 		"""
@@ -300,17 +328,7 @@ class Boozer:
 
 		:return: string
 		"""
-		if not self.TEMPERATURE_ENABLED:
-			return None
-
-		try:
-			r = requests.get(self.config.get("Temperature", "endpoint"))
-			if r.status_code == 200:
-				return r.text
-			else:
-				return "error_http"
-		except:
-			return "error"
+		return self.temperature_client.get_temperature()
 
 
 	def record_pour(self, tap_id, pour):
@@ -357,7 +375,7 @@ class Boozer:
 
 		msg = "I just poured " + volume_poured + " from tap " + str(tap_id) + " (" + volume_remaining + "% remaining) "
 		if temperature is not None:
-			msg = msg + "at " + str(temperature) + DEGREES + "."
+			msg = msg + "at " + str(temperature) + beer_temps.DEGREES + "."
 		else:
 			msg = msg + "."
 		return msg

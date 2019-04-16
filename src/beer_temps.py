@@ -2,13 +2,15 @@
 # -*- coding: utf-8 -*
 import json
 import requests
-import ConfigParser
 import logging
 import sys
 import os
 import glob
 
 logger = logging.getLogger(__name__)
+DEGREES = "°"
+SENSOR_DS18B20 = "ds18b20"
+SENSOR_HTTP = "http"
 
 class BeerTemps():
 	sensor_protocol = None
@@ -18,10 +20,11 @@ class BeerTemps():
 	sensor_url = None
 	sensor_metric = False
 
-	def __init__(self, sensor_protocol, sensor_id=None, sensor_url=None, sensor_metric = False):
+	def __init__(self, sensor_protocol=None, sensor_id=None, sensor_url=None, sensor_metric=False):
 		"""
 
 		"""
+		logger.info("beertemps initializing")
 		if sensor_protocol != self.SENSOR_DS18B20 and sensor_protocol != self.SENSOR_HTTP:
 			logger.error("Configuration error. temperature sensor_protocol must map to DS18B20 or HTTP")
 			sys.exit(1)
