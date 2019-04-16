@@ -1,5 +1,7 @@
 from influxdb import InfluxDBClient
 import random
+import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -26,16 +28,16 @@ class InfluxdbBoozerClient():
         self.port = port
 
         try:
-            self.client = InfluxDBClient(host, port, user, password, database)
+            self.client = InfluxDBClient(host, port, username, password, database)
         except: 
             logger.error("Unable to create InfluxDBClient or connect to influxdb instance.")
             self.client = None
             return
-        
+
         # Try to create the database
-        client.create_database(database)
-    
-    def write_metric(metric_value, metric_name=self.DEFAULT_METRIC_NAME):
+        self.client.create_database(database)
+
+    def write_metric(self, metric_value, metric_name="temperature"):
         """
         Writes a metric to the influxdb instance.
 
@@ -68,7 +70,7 @@ class InfluxdbBoozerClient():
 
         return None
     
-    def get_metrics():
+    def get_metrics(self):
         self.client.query("select * from demo")
 
 def main():
@@ -81,11 +83,11 @@ def main():
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     logger.setLevel(logging.DEBUG)
-    logger.setLevel(logging.INFO)
+    #logger.setLevel(logging.INFO)
 
-    influx_client = InfluxdbBoozerClient('texas.lol', database="boozer", username="", password="", port=8086)
+    influx_client = InfluxdbBoozerClient('texas.lol', database="boozer", username="", password="", port=31132)
     random_metric = random.random() * 100
-    influx_client.write_metric(metric_name='test_metric', random_metric) # Write a random metric to influx
+    influx_client.write_metric(random_metric, metric_name='test_metric') # Write a random metric to influx
 
 if __name__ == "__main__":
     main()
