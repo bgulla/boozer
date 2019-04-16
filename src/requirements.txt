@@ -7,3 +7,4 @@ scrollphat
 #luma.oled
 zope.event
 pyfiglet
+influxdb
