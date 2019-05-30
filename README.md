@@ -1,4 +1,4 @@
-# boozer - Kegerator Monitoring Toolkit 
+# boozer - Kegerator Monitoring Platform 
 
 [![Build Status](https://travis-ci.org/bgulla/boozer.svg?branch=master)](https://travis-ci.org/bgulla/boozer)
 
