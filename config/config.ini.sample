@@ -1,36 +1,54 @@
-[Database]
-filepath: ../db/db.sqlite
+[Boozer]
+minimum_pour_vol: 0.075 # Used for testing
+logging_level: INFO
 
 [Taps]
-tap1_gpio_pin: 24
-tap2_gpio_pin: 26 
-tap3_gpio_pin: 12 
-tap4_gpio_pin: 13
-tap1_beer_name: Bud Light
-tap2_beer_name: Seltzer Water
-tap3_beer_name: Sweet Baby Jesus
-tap4_beer_name: disabled
+tap1_gpio_pin: 13
+tap1_beer_name: Test Batch
+tap1_gallon_capacity: 5
+tap2_gpio_pin: 14
+tap2_beer_name: Manor Hill Friends Dont Shake Hands
+tap2_gallon_capacity: 5
+tap3_gpio_pin: 15
+tap3_beer_name: Banquet Beer
+tap3_gallon_capacity: 5
+tap4_gpio_pin: 16
+tap4_beer_name: Seltzer
+tap4_gallon_capacity: 5
+
+[Slack]
+enabled:True
+webhookurl: https://hooks.slack.com/services/<redacted>
 
 [Temperature]
 enabled: True
-endpoint: http://localhost:8888/chillerf
-
-[Slack]
-enabled: True
-webhookurl: https://hooks.slack.com/services/xxx/xxx/xxx
+sensor_protocol: ds18b20
+#sensor_url: http://10.0.1.48:8888/chillerf
+#endpoint: http://10.0.1.48:8888/chillerf
 
 [Twitter]
-enabled: False
-consumer_key=""
-consumer_secret=""
-access_token=""
-access_token_secret=""
+enabled: True
+consumer_key="redacted"
+consumer_secret="redacted"
+access_token="1549176829-redacted"
+access_token_secret="redacted"
+
+[Mqtt]
+enabled: True
+broker: mqtthost.lol
+port: 31353
+#username: foo
+#password: bar
+
+
+[Logging]
+file: /tmp/beer.log
 
 [Scrollphat]
 enabled: True
 
-[Mqtt]
+[Influxdb]
 enabled: True
-broker: localhost
-port: 1883
+host=influxhost.lol
+port=8086
 

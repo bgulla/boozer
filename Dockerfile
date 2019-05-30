@@ -1,5 +1,5 @@
 FROM resin/rpi-raspbian
-MAINTAINER <boozer@bgulla.dev>
+MAINTAINER <hey@bgulla.dev>
 
 RUN apt-get update; apt-get install -y python-dev  python-dev python-pip libfreetype6-dev libjpeg-dev build-essential python-setuptools python-pip python-smbus python-rpi.gpio ; apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -14,15 +14,8 @@ ENV APP_HOME=/boozer
 
 COPY ./src/requirements.txt /boozer/
 RUN pip install --upgrade setuptools pip; pip install -r /boozer/requirements.txt
-COPY ./src/beer_db.py /boozer/
 COPY ./db/db.sqlite /boozer/
-COPY ./src/flowmeter.py /boozer/
-COPY ./src/twitter_notify.py /boozer/
-COPY ./src/slack_notify.py /boozer/
-COPY ./src/bar_mqtt.py /boozer/
-COPY ./src/boozer.py /boozer/
-COPY ./src/toolkit.py /boozer/
-
+COPY ./src /boozer
 RUN chown -R app:app $APP_HOME
 
 #USER app

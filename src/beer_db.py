@@ -38,15 +38,14 @@ class BeerDB():
         log.info("Table created: " + self.DB_FILEPATH)
 
 
-    def get_percentage(self, tap_id):
+    def get_percentage(self, tap_id, capacity_in_gallons=5):
         """
 
         :param tap_id:
         :return:
         """
         PINTS_PER_GALLON = 8
-        GALLONS = 5
-        TOTAL_VOLUME = PINTS_PER_GALLON * GALLONS
+        TOTAL_VOLUME = PINTS_PER_GALLON * capacity_in_gallons
         volume_expelled = self.get_tap(tap_id)
         n = volume_expelled / TOTAL_VOLUME
         return 1 - n
@@ -92,7 +91,7 @@ class BeerDB():
             c.execute(sql)
         conn.commit()
         conn.close()
-        print "Record: Tap %s Volume %s " % (tap_id, volume)
+        print "Record: Tap %s Volume %s Percentage: %s" % (tap_id, volume, str(self.get_percentage100(tap_id)))
 
 
     def get_tap(self, tap_id):
@@ -116,11 +115,10 @@ class BeerDB():
 
         :return:
         """
-        for x in range(1, 5):
-            print "Tap: ", x, self.get_tap(x)
+        print "print_all_taps() is deprecated."
 
 
-    def update_tap(self, tap_id, volume):
+    def update_tap(self, tap_id, volume, capacity_in_gallons=5):
         """
 
         :param tap_id:
@@ -141,3 +139,12 @@ class BeerDB():
         """
         self.set_tap(tap_id, 0)
         print "Reset Tap ", tap_id
+
+
+def main():
+    db = BeerDB()
+    db.update_tap(1,1.1234)
+    print db.get_percentage(1,5)
+
+if __name__ == '__main__':
+    main()
