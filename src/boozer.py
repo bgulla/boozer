@@ -128,7 +128,7 @@ class Boozer:
 
 		# INFLUXDB plugin
 		try:
-			if self.config.getboolean(self.INFLUXDB_LBL, "enabled"):
+			if self.config.getboolean("Influxdb", "enabled"):
 				logger.info("config: INFLUXDB enabled")
 				self.INFLUXDB_ENABLED = True
 
@@ -139,7 +139,7 @@ class Boozer:
 				database = None
 				port = 8086
 				database = "boozer"
-
+				logger.info("about to configure influx")
 				try: # read in the mandatory values
 					host = self.config.get(self.INFLUXDB_LBL, "host")
 				except:
@@ -157,8 +157,10 @@ class Boozer:
 				
 				self.influxdb_client = influxdb_client.InfluxdbBoozerClient(host=host, port=port, username=username, password=password, database=database)
 				logger.info("influxdb component initialized")
+			else:
+				logger.info("INFLUXDB_ENABLED=False")
 		except: 
-			logger.info("%s Entry not found in %s, setting MQTT_ENABLED to False" % (self.INFLUXDB_LBL, self.CONFIG_FILEPATH))
+			logger.info("%s Entry not found in %s, setting INFLUXBD_ENABLED to False" % (self.INFLUXDB_LBL, self.CONFIG_FILEPATH))
 			self.INFLUXDB_ENABLED = False
 
 		# setup temperature client
@@ -166,6 +168,7 @@ class Boozer:
 			try:
 				if self.config.getboolean("Temperature", "enabled"):
 					self.TEMPERATURE_ENABLED = True
+					logger.info("TEMPERATURE_ENABLED = True")
 					try:
 						sensor_url = self.config.get("Temperature", "endpoint")
 						logger.info("Temperature. setting up endpoint based temp client")
@@ -200,7 +203,7 @@ class Boozer:
 			logger.info("Slack Entry not found in %s, setting SLACK_ENABLED to False")
 			self.SLACK_ENABLED = False
 
-		# setup slack client
+		# setup scrollphat client
 		try:
 			if self.config.getboolean("Scrollphat", "enabled"):
 				self.SCROLLPHAT_ENABLED = True
@@ -483,6 +486,7 @@ class Boozer:
 		# --- Begin old main
 		self.print_config()
 		logger.info("Boozer Intialized! Waiting for pours. Drink up, be merry!")
+		counter = 0
 		while True:
 
 			# Handle keyboard events
@@ -490,9 +494,18 @@ class Boozer:
 			
 			for tap in self.taps:
 				tap.listen_for_pour()
+			
+			# push to influx if enabled
+			counter = counter + 0.01
+			if self.INFLUXDB_ENABLED:
+				if counter > 60:
+					if self.TEMPERATURE_ENABLED:
+						self.influxdb_client.write_metric(self.temperature_client.get_temperature())
+					counter = 0
 
 			# go night night
 			time.sleep(0.01)
+
 
 def main():
 	boozer = Boozer()
