@@ -117,6 +117,7 @@ docker run --rm  -d --name="boozer" \
 ```
 
 ## Home-Assistant
+![boozer in home-assistant](img/boozer_lovelace.png?raw=true)
 
 Add the following to your `configuration.yaml` file. 
 ```yaml
