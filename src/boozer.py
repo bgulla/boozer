@@ -23,7 +23,6 @@ import os
 import sys
 import socket
 from contextlib import closing
-import boozer_display
 import influxdb_client
 
 # --=== Begin Rewrite
@@ -53,10 +52,6 @@ class Boozer:
 		self.config = ConfigParser.ConfigParser()
 		self.config.read(self.CONFIG_FILEPATH)
 
-		self.db = beer_db.BeerDB(self.DB_FILEPATH)  # TODO: replace this with configuration value
-		#if config.get("Scrollphat", 'enabled') == "True":
-		#    scrollphat.set_brightness(7)
-
 		# Set the logger
 		logger = logging.getLogger()
 		handler = logging.StreamHandler()
@@ -66,32 +61,6 @@ class Boozer:
 		logger.addHandler(handler)
 		logger.setLevel(logging.DEBUG)
 		logger.setLevel(logging.INFO)
-
-		current_path = os.path.dirname(os.path.realpath(__file__))
-		if not os.path.isfile(self.DB_FILEPATH):
-			logger.fatal("[fatal] cannot load db from " % self.DB_FILEPATH)
-			sys.exit(1)
-		if not os.path.isfile(self.CONFIG_FILEPATH):
-			logger.fatal("[fatal] cannot load config from " % self.CONFIG_FILEPATH)
-			sys.exit(1)
-
-		# setup twitter client
-		try:
-			if self.config.getboolean("Twitter", "enabled"):
-				self.TWITTER_ENABLED = True
-				try:
-					consumer_key = self.config.get("Twitter", "consumer_key").strip('"')
-					consumer_secret = self.config.get("Twitter", "consumer_secret").strip('"')
-					access_token = self.config.get("Twitter", "access_token").strip('"')
-					access_token_secret = self.config.get("Twitter", "access_token_secret").strip('"')
-				except:
-					logger.error("Unable to pull twitter credentials from configuration file.")
-				self.twitter_client = twitter_notify.TwitterNotify(self.config)
-		except: 
-			logger.info("Twitter Entry not found in %s, setting TWITTER_ENABLED to False", sys.exc_info()[0] )
-			self.TWITTER_ENABLED = False
-
-
 		# Check to see if we need to override the logging level
 		try:
 			level = self.config.get("Boozer", "logging_level")
@@ -103,9 +72,37 @@ class Boozer:
 				logger.setLevel(logging.DEBUG)
 			if level == "ERROR" or level == "error":
 				logger.setLevel(logging.ERROR)
-		except:
-			logger.debug("not overrding the logging level")
+		except Exception, e:
+			logger.debug("not overrding the logging level. error: " + str(e))
 
+		self.db = beer_db.BeerDB(self.DB_FILEPATH)  # TODO: replace this with configuration value
+
+		current_path = os.path.dirname(os.path.realpath(__file__))
+		if not os.path.isfile(self.DB_FILEPATH):
+			logger.fatal("[fatal] cannot load db from " % self.DB_FILEPATH)
+			sys.exit(1)
+		if not os.path.isfile(self.CONFIG_FILEPATH):
+			logger.fatal("[fatal] cannot load config from " % self.CONFIG_FILEPATH)
+			sys.exit(1)
+
+		# setup twitter client
+		if self.config.getboolean("Twitter", "enabled"):
+			self.TWITTER_ENABLED = True
+			try:
+				consumer_key = self.config.get("Twitter", "consumer_key").strip('"')
+				consumer_secret = self.config.get("Twitter", "consumer_secret").strip('"')
+				access_token = self.config.get("Twitter", "access_token").strip('"')
+				access_token_secret = self.config.get("Twitter", "access_token_secret").strip('"')
+			
+				self.twitter_client = twitter_notify.TwitterNotify(consumer_key, consumer_secret, access_token, access_token_secret)
+				logger.debug("TWITTER_ENABLED=True")
+			except Exception, e:
+				logger.error("Unable to pull twitter credentials from configuration file. setting TWITTER_ENABLED=False; error: " + str(e))
+				self.TWITTER_ENABLED = False
+				logger.debug("TWITTER_ENABLED=False")
+		else:
+			self.TWITTER_ENABLED = False
+			logger.debug("TWITTER_ENABLED=False")
 
 		# setup mqtt client
 		try:
@@ -119,10 +116,10 @@ class Boozer:
 				try:
 					username = self.config.get("Mqtt", "username")
 					password = self.config.get("Mqtt", "password")
-				except:
+				except Exception, e:
 					logger.debug("skipping mqtt username/password because at least one was missing.")
 				self.mqtt_client = bar_mqtt.BoozerMqtt(self.config.get("Mqtt", "broker"), port=self.config.get("Mqtt", "port"), username=username, password=password)
-		except: 
+		except Exception, e: 
 			logger.info("MQTT Entry not found in %s, setting MQTT_ENABLED to False" % self.CONFIG_FILEPATH)
 			self.MQTT_ENABLED = False
 
@@ -142,7 +139,7 @@ class Boozer:
 				logger.info("about to configure influx")
 				try: # read in the mandatory values
 					host = self.config.get(self.INFLUXDB_LBL, "host")
-				except:
+				except Exception, e:
 					logger.error("config error. unable to get host from %s." % self.INFLUXDB_LBL)
 					self.INFLUXDB_ENABLED = False
 					return
@@ -152,14 +149,14 @@ class Boozer:
 					username = self.config.get(self.INFLUXDB_LBL, "username")
 					password = self.config.get(self.INFLUXDB_LBL, "password")
 					database = self.config.get(self.INFLUXDB_LBL, "database")
-				except: 
+				except Exception, e: 
 					logger.debug("missing an optional key in influx config. moving on.")
 				
 				self.influxdb_client = influxdb_client.InfluxdbBoozerClient(host=host, port=port, username=username, password=password, database=database)
 				logger.info("influxdb component initialized")
 			else:
 				logger.info("INFLUXDB_ENABLED=False")
-		except: 
+		except Exception, e: 
 			logger.info("%s Entry not found in %s, setting INFLUXBD_ENABLED to False" % (self.INFLUXDB_LBL, self.CONFIG_FILEPATH))
 			self.INFLUXDB_ENABLED = False
 
@@ -206,6 +203,7 @@ class Boozer:
 		# setup scrollphat client
 		try:
 			if self.config.getboolean("Scrollphat", "enabled"):
+				import boozer_display
 				self.SCROLLPHAT_ENABLED = True
 				self.boozer_display = boozer_display.BoozerDisplay()
 		except: 
@@ -418,61 +416,69 @@ class Boozer:
 			logger.debug("flowmeter.POUR_UPDATE")
 			#print "brandon do something like update the scrollphat display or do nothing. it's cool"
 	
-	def get_pour_announcement(tap_obj):
-
-		volume_remaining = str(self.db.get_percentage(tap_obj.tap_id))
-
-		msg = "I just poured " + volume_poured + " from tap " + str(tap_id) + " (" + volume_remaining + "% remaining) "
-		if temperature is not None:
+	def get_pour_announcement(self,volume_poured, volume_remaining, beverage_name="default-beverage", tap_id="default-tapid" ):
+		msg = "I just poured " 
+		msg = msg + str(volume_poured) 
+		msg = msg + " of " + str(beverage_name) 
+		msg = msg +  "from tap " + str(tap_id) 
+		msg = msg + " (" + str(volume_remaining) 
+		msg = msg + "% remaining) "
+		if self.TEMPERATURE_ENABLED:
 			msg = msg + "at " + str(temperature) + beer_temps.DEGREES + "."
 		else:
 			msg = msg + "."
 		return msg
 
 
-	def tweet_new_pour(self, tap_obj):
-		volume_remaining = str(self.db.get_percentage(tap_obj.tap_id))
-
+	def tweet_new_pour(self, msg):
 		try:
 			logger.info("Twitter is enabled. Preparing to send tweet.")
 			# calculate how much beer is left in the keg
 			# tweet of the record
 			self.twitter_client.post_tweet(msg)
 			logger.info("Tweet Sent: %s" % msg)
-		except:
-			logger.error("ERROR unable to send tweet")
+		except Exception, e:
+			logger.error("ERROR unable to send tweet: " + str(e) )
 			logger.error(sys.exc_info()[0])
+
+	def update_database_with_new_pour(self, tap_id, total_pour_size, capacity_gallons):
+		try:
+			self.db.update_tap(tap_id, total_pour_size, capacity_gallons) # record the pour in the db
+			logger.info("Database updated: %s %s. " % (str(tap_id), str(total_pour_size)), )
+		except Exception, e:
+			logger.error("unable to register new pour event to db: " + str(e))
 
 	def register_new_pour(self, tap_obj):
 		"""
 		"""
-		
 		pour_size = round(tap_obj.thisPour * tap_obj.PINTS_IN_A_LITER, 3)
 		total_pour_size = round(tap_obj.totalPour * tap_obj.PINTS_IN_A_LITER, 3)
-				# record that pour into the database
+		volume_remaining = (self.db.get_percentage100(tap_obj.tap_id))
+		# record that pour into the database
 		logger.info("POUR this pour was %s pints (thisPour=%s vs totalPour=%s" % (str(pour_size), str(tap_obj.thisPour), str(tap_obj.totalPour)))
 		
-		try:
-			self.db.update_tap(tap_obj.tap_id, total_pour_size, capacity=tap_obj.get_gallon_capacity()) # record the pour in the db
-			logger.info("Database updated: %s %s. " % (str(tap_obj.tap_id), str(total_pour_size)), )
-		except :
-			logger.error("unable to register new pour event to db")
-		
+		self.update_database_with_new_pour(tap_obj.tap_id, total_pour_size, capacity_gallons=tap_obj.get_gallon_capacity())
 		
 		# calculate how much beer is left in the keg
 		#volume_remaining = str(round(db.get_percentage(tap_obj.tap_id), 3) * 100)
-		volume_remaining = str(self.db.get_percentage(tap_obj.tap_id))
-
-		# Notification Agents
-		if self.TWITTER_ENABLED: 
-			self.tweet_new_pour(get_pour_announcement(tap_obj))
-		if self.SLACK_ENABLED:
-			self.slack_client.post_slack_msg(get_pour_announcement(tap_obj))
-		# publish the updated value to mqtt broker
-		if self.config.getboolean("Mqtt", "enabled"): 
-			self.update_mqtt(tap_obj.tap_id)
-		# reset the counter
 		
+		
+		# Notification Agents
+		if self.TWITTER_ENABLED or self.SLACK_ENABLED:
+			try:
+				pour_msg = self.get_pour_announcement(total_pour_size, str(volume_remaining), str(tap_obj.get_beverage_name()), str(tap_obj.get_tap_id()))
+				if self.TWITTER_ENABLED: 
+					self.tweet_new_pour(pour_msg)
+				if self.SLACK_ENABLED:
+					self.slack_client.post_slack_msg(pour_msg)
+			except Exception, e:
+				logger.error("unable create notification.")
+		
+		# publish the updated value to mqtt broker
+		if self.MQTT_ENABLED: 
+			self.update_mqtt(tap_obj.get_tap_id())
+		
+		# reset the counter
 		logger.info("Pour processing complete. Reseting pour of tap %i amount to 0.0" % tap_obj.get_tap_id())
 		tap_obj.thisPour = 0.0
 		tap_obj.totalPour = 0.0
@@ -482,8 +488,6 @@ class Boozer:
 
 	def run(self):
 
-		# TODO: save initial timestamp
-		# --- Begin old main
 		self.print_config()
 		logger.info("Boozer Intialized! Waiting for pours. Drink up, be merry!")
 		counter = 0
