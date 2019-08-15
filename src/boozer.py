@@ -248,7 +248,7 @@ class Boozer:
 
 			try:
 				this_tap_gpio_pin = self.config.getint("Taps", str_tapN_gpio_pin) # this looks for the tap gpio pin such as "tap1_gpio_pin"
-				this_tap_beer_name = [self.config.get("Taps", str_tapN_beer_name)]
+				this_tap_beer_name = self.config.get("Taps", str_tapN_beer_name)
 				new_tap = FlowMeter("not metric", this_tap_beer_name, tap_id=tap, pin=this_tap_gpio_pin, config=self.config, capacity=capacity_gallons, minimum_pour_vol=minimum_pour_vol) # Create the tap object
 				self.taps.append(new_tap) # Add the new tap object to the array
 			except:
@@ -256,7 +256,7 @@ class Boozer:
 
 			# If mqtt is enabled, we need to push the new value. This is because mqtt does not always persist and that's a good thing to do.
 			if self.MQTT_ENABLED:
-				self.update_mqtt(tap)
+				self.update_mqtt(tap, beverage_name=new_tap.get_beverage_name())
 
 			# Check to see if we need to reset the database value
 			try:
@@ -277,16 +277,20 @@ class Boozer:
 
 		zope.event.subscribers.append(self.register_pour_event) # Attach the event
 
-	def update_mqtt(self, tap_id):
+	def update_mqtt(self, tap_id="-1", beverage_name="default_beverage"):
 		"""
 
 		:param tap_id:
 		:return:
 		"""
 		percent = self.db.get_percentage100(tap_id)
-		topic = "bar/tap%s" % str(tap_id)
+		volume_topic = "bar/tap%s/value" % str(tap_id)
+		beverage_name_topic="bar/tap%s/beverage" % str(tap_id)
 		try:
-			self.mqtt_client.pub_mqtt(topic, str(percent))
+			#Update the volume
+			self.mqtt_client.pub_mqtt(volume_topic, str(percent))
+			#Update the beverage name
+			self.mqtt_client.pub_mqtt(beverage_name_topic, str(beverage_name))
 		except:
 			logger.error("Unable to publish mqtt update for tap: %i " % int(tap_id)    )
 			logger.error(sys.exc_info()[0])
@@ -423,6 +427,7 @@ class Boozer:
 		msg = msg +  "from tap " + str(tap_id) 
 		msg = msg + " (" + str(volume_remaining) 
 		msg = msg + "% remaining) "
+		
 		if self.TEMPERATURE_ENABLED:
 			msg = msg + "at " + str(temperature) + beer_temps.DEGREES + "."
 		else:
@@ -476,7 +481,7 @@ class Boozer:
 		
 		# publish the updated value to mqtt broker
 		if self.MQTT_ENABLED: 
-			self.update_mqtt(tap_obj.get_tap_id())
+			self.update_mqtt(tap_obj.get_tap_id(),beverage_name=tap_obj.get_beverage_name())
 		
 		# reset the counter
 		logger.info("Pour processing complete. Reseting pour of tap %i amount to 0.0" % tap_obj.get_tap_id())

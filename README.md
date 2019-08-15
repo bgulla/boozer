@@ -116,6 +116,42 @@ docker run --rm  -d --name="boozer" \
     -t boozerbar/boozer
 ```
 
+## Home-Assistant
+
+Add the following to your `configuration.yaml` file. 
+```yaml
+mqtt:
+  broker: <mqtt_host>
+  port: <mqtt_port>
+sensor:
+  - platform: mqtt
+    state_topic: "bar/tap1/value"
+    name: "Boozer Tap1"
+  - platform: mqtt
+    state_topic: "bar/tap1/beverage"
+    name: "Boozer Tap1 beverage"
+  - platform: mqtt
+    state_topic: "bar/tap2/value"
+    name: "Boozer Tap2"
+  - platform: mqtt
+    state_topic: "bar/tap2/beverage"
+    name: "Boozer Tap2 beverage"
+  - platform: mqtt
+    state_topic: "bar/tap3/value"
+    name: "Boozer Tap3"
+  - platform: mqtt
+    state_topic: "bar/tap3/beverage"
+    name: "Boozer Tap3 beverage"
+  - platform: mqtt
+    state_topic: "bar/tap4/value"
+    name: "Boozer Tap4"
+  - platform: mqtt
+    state_topic: "bar/tap4/beverage"
+    name: "Boozer Tap4 beverage"
+
+```
+
+
 ## Configuration Sample
 ```
 [Boozer]
@@ -237,9 +273,6 @@ With a little help from [Telegraf](https://github.com/influxdata/telegraf) (or s
 
 ![Grafana is awesome](https://github.com/bgulla/boozer/blob/master/dashboard/bar-dashboard.png?raw=true)
 
-# Home Assistant
-Home Assistant is a great tool to pull together all of your home's smart IOT devices into an easy to use, secure tool. Since Boozer can speak mqtt, it can be easily integrated into [Home Assistant](https://home-assistant.io).
-![Home Assistant](https://github.com/bgulla/boozer/blob/master/img/hass.png?raw=true)
 
 ## Build Pictures
 Photos of the bar making process are available [here](https://imgur.com/a/7jnrc).
