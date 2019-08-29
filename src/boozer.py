@@ -423,15 +423,15 @@ class Boozer:
 	def get_pour_announcement(self,volume_poured, volume_remaining, beverage_name="default-beverage", tap_id="default-tapid" ):
 		msg = "I just poured " 
 		msg = msg + str(volume_poured) 
-		msg = msg + " of " + str(beverage_name) 
-		msg = msg +  "from tap " + str(tap_id) 
+		msg = msg + " pints of " + str(beverage_name) 
+		msg = msg +  " from tap " + str(tap_id) 
 		msg = msg + " (" + str(volume_remaining) 
 		msg = msg + "% remaining) "
 		
 		if self.TEMPERATURE_ENABLED:
 			msg = msg + "at " + str(temperature) + beer_temps.DEGREES + "."
 		else:
-			msg = msg + "."
+			msg = msg[:-1] + "."
 		return msg
 
 
@@ -463,10 +463,10 @@ class Boozer:
 		logger.info("POUR this pour was %s pints (thisPour=%s vs totalPour=%s" % (str(pour_size), str(tap_obj.thisPour), str(tap_obj.totalPour)))
 		
 		self.update_database_with_new_pour(tap_obj.tap_id, total_pour_size, capacity_gallons=tap_obj.get_gallon_capacity())
+		volume_remaining = (self.db.get_percentage100(tap_obj.tap_id))
 		
 		# calculate how much beer is left in the keg
 		#volume_remaining = str(round(db.get_percentage(tap_obj.tap_id), 3) * 100)
-		
 		
 		# Notification Agents
 		if self.TWITTER_ENABLED or self.SLACK_ENABLED:

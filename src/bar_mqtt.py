@@ -41,7 +41,7 @@ class BoozerMqtt():
             logger.error("unable to connect to mqtt on %s:%i" % (self.broker, self.port))
         logger.info("mqtt topic updated: topic: " + topic + " | value: " + value)
 
-        return client1.publish(topic, value)  # publish
+        return client1.publish(topic, value, qos=0, retain=True)  # publish
 
     def get_value(self, topic):
         """
