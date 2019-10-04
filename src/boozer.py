@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*
 
 import os
-import pyfiglet 
+import pyfiglet
 import time
 import math
 import logging
@@ -30,8 +30,8 @@ class Boozer:
 
 	db = None
 	config = None
-	CONFIG_FILEPATH = "./config.ini"
-	DB_FILEPATH = "./db.sqlite"
+	CONFIG_FILEPATH = os.getenv("CONFIG_FILEPATH", "./config.ini")
+	DB_FILEPATH = os.getenv("DB_FILEPATTH","./db.sqlite")
 	MQTT_ENABLED = False
 	INFLUXDB_ENABLED = False
 	TWITTER_ENABLED = False
