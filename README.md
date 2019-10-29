@@ -1,7 +1,5 @@
 # boozer - Kegerator Monitoring Platform 
 
-#[![Build Status](https://travis-ci.org/bgulla/boozer.svg?branch=master)](https://travis-ci.org/bgulla/boozer)
-
 ```bash
  ____   ___   ___ __________ ____
 | __ ) / _ \ / _ \__  / ____|  _ \
