@@ -94,8 +94,8 @@ Boozer can tweet out whenever a new pour event is detected. The following notifi
 ## Hardware
 The following hardware was used in the inital build of boozer but not necessarily required.
  * [Raspberry Pi](https://www.adafruit.com/product/3055)
- * [Flow Sensors (x4)](https://www.adafruit.com/product/828)
-   * [1/2 to 1/4 Adapter (x8)](https://www.amazon.com/gp/product/B00AB5X28G)
+ * [Flow-Sensors (1-10)](https://www.adafruit.com/product/828)
+   * [1/2 to 1/4 Adapter (2 per flow-sensor)](https://www.amazon.com/gp/product/B00AB5X28G)
  * [ScrollPhat LED Display](https://shop.pimoroni.com/products/scroll-phat) (Optional)
  * [DS18b20 Waterproof Temperature Sensor](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-11-ds18b20-temperature-sensing/hardware) (Optional)
 
@@ -267,8 +267,8 @@ protip: another way to reset the tap val to 100% without the toolkit is to add `
 
 
 
-## Grafana Integration
-With a little help from [Telegraf](https://github.com/influxdata/telegraf) (or straight up mqtt with v2) and the Mqtt  message broker, bar stats are viewable in real time with Grafana.
+## Displaying Stats in Grafana
+With a little help from [Telegraf](https://github.com/influxdata/telegraf) (or directly with v2) and the Mqtt  message broker, bar stats are viewable in real time with Grafana.
 
 ![Grafana is awesome](https://github.com/bgulla/boozer/blob/master/dashboard/bar-dashboard.png?raw=true)
 
