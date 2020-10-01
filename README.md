@@ -67,6 +67,10 @@ Kegerator monitoring/volume tracking platform writting in Python.
  * Temperature Monitoring via ds18b20 GPIO sensor [or sensors2json microservice/REST](https://github.com/bgulla/sensor2json)
  * IoT functionality with MQTT/Mosquito and InfluxDB.
 
+# Support update:
+Boozer is now longer in active development but can be used as the basis of new development projects.
+
+
 ## Version 2 
 * Complete rewrite
 * 1-10 flowsensors are now supported
@@ -97,7 +101,7 @@ The following hardware was used in the inital build of boozer but not necessaril
  * [Flow-Sensors (1-10)](https://www.adafruit.com/product/828)
    * [1/2 to 1/4 Adapter (2 per flow-sensor)](https://www.amazon.com/gp/product/B00AB5X28G)
  * [ScrollPhat LED Display](https://shop.pimoroni.com/products/scroll-phat) (Optional)
- * [DS18b20 Waterproof Temperature Sensor](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-11-ds18b20-temperature-sensing/hardware) (Optional)
+ * [DS18b20 Waterproof Temperature Sensor](https://www.amazon.com/Gikfun-DS18B20-Temperature-Waterproof-EK1083x3/dp/B012C597T0) (Optional)
 
 ![Pouring in motion](https://github.com/bgulla/boozer/blob/master/img/pour.gif?raw=true) 
 ![Breadboard](https://github.com/bgulla/boozer/blob/master/img/breadboard.jpg?raw=true)
